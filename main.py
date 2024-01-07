@@ -7,7 +7,7 @@ import GameObjects
 
 # Инициализация Pygame
 pygame.init()
-
+clock = pygame.time.Clock()
 # Установка размеров экрана
 screen_width = 800
 screen_height = 600
@@ -39,9 +39,8 @@ bullets = []  # Список для хранения пуль
 coins = []  # Список для хранения монеток
 trail = []
 
-enemy_speed = 0.1
 enemy_triangle_speed = 0.05  # Например, установим скорость треугольников в 0.05 (вы можете выбрать другое значение)
-coins_collected = 0
+
 
 player_health_upgrade_cost = 20
 player_damage_upgrade_cost = 30
@@ -389,5 +388,6 @@ while True:
     draw_objects()
     new_player = GameObjects.Entity(form=GameObjects.Forms.circle)
     new_player.draw(screen)
-
+    pygame.display.flip()
+    clock.tick(500)
     pygame.display.update()
