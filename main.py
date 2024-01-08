@@ -4,7 +4,6 @@ import random
 import pygame
 import GameObjects
 
-
 # Инициализация Pygame
 pygame.init()
 clock = pygame.time.Clock()
@@ -20,6 +19,10 @@ player_pos = [screen_width // 2, screen_height // 2]
 player_speed = 0.5  # Уменьшили скорость игрока
 player_health = 100
 coins_collected = 0
+
+new_player = GameObjects.Entity(form=GameObjects.Form.circle, size=100)
+new_player.place((200, 250))
+new_player.take_damage(50)
 
 # Параметры врагов
 enemy_size = 50
@@ -40,7 +43,6 @@ coins = []  # Список для хранения монеток
 trail = []
 
 enemy_triangle_speed = 0.05  # Например, установим скорость треугольников в 0.05 (вы можете выбрать другое значение)
-
 
 player_health_upgrade_cost = 20
 player_damage_upgrade_cost = 30
@@ -145,8 +147,10 @@ def draw_objects():
         if enemy[3] == 4:  # Проверяем тип врага (гибрид)
             # Отрисовка хит-бара для гибридов
             pygame.draw.rect(screen, (0, 128, 0),
-                             (
-                             enemy[0], enemy[1] + enemy_size + 10, (enemy[2] / (enemy_health * 2)) * enemy_size / 2, 5))
+                             (enemy[0],
+                              enemy[1] + enemy_size + 10,
+                              (enemy[2] / (enemy_health * 2)) * enemy_size / 2, 5))
+
             pygame.draw.polygon(screen, 'blue', [
                 (enemy[0], enemy[1] + enemy_size),
                 (enemy[0] + enemy_size, enemy[1] + enemy_size),
@@ -302,12 +306,11 @@ while True:
                 bullets_from_enemies.append([enemy[0], enemy[1], bullet_dx, bullet_dy])
                 last_enemy_shot = current_time
 
-
         if enemy[2] <= 0:  # Проверяем, если у треугольника закончились жизни
-                coins.append([enemy[0], enemy[1]])  # Добавляем первую монетку
-                coins.append([enemy[0], enemy[1]])  # Добавляем вторую монетку
-                enemies.remove(enemy)  # Удаляем треугольник из списка врагов
-                break  # Прерываем цикл, чтобы избежать проверки после удаления
+            coins.append([enemy[0], enemy[1]])  # Добавляем первую монетку
+            coins.append([enemy[0], enemy[1]])  # Добавляем вторую монетку
+            enemies.remove(enemy)  # Удаляем треугольник из списка врагов
+            break  # Прерываем цикл, чтобы избежать проверки после удаления
 
         else:  # Для других типов врагов оставляем прежнюю логику
             enemy[0] += dir_x * enemy_speed
@@ -386,8 +389,10 @@ while True:
 
     # Обновление экрана и объектов
     draw_objects()
-    new_player = GameObjects.Entity(form=GameObjects.Forms.circle)
+
     new_player.draw(screen)
+    new_player.draw_health_bar(screen)
+
     pygame.display.flip()
     clock.tick(500)
     pygame.display.update()
