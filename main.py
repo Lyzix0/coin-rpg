@@ -2,7 +2,7 @@ import sys
 import math
 import random
 import pygame
-
+import GameObjects
 
 # Инициализация Pygame
 pygame.init()
@@ -19,6 +19,10 @@ player_pos = [screen_width // 2, screen_height // 2]
 player_speed = 0.5  # Уменьшили скорость игрока
 player_health = 100
 coins_collected = 0
+
+new_player = GameObjects.Entity(form=GameObjects.Form.circle, size=100)
+new_player.place((200, 250))
+new_player.take_damage(50)
 
 # Параметры врагов
 enemy_size = 50
@@ -226,7 +230,6 @@ last_time = pygame.time.get_ticks()
 
 game_over = False
 
-
 # Главный игровой цикл
 while True:
     if game_over:
@@ -387,8 +390,8 @@ while True:
     # Обновление экрана и объектов
     draw_objects()
 
-    # new_player.draw(screen)
-    # new_player.draw_health_bar(screen)
+    new_player.draw(screen)
+    new_player.draw_health_bar(screen)
 
     pygame.display.flip()
     clock.tick(500)
