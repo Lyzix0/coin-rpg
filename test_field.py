@@ -1,6 +1,7 @@
 import sys
 import pygame
-from GameObjects import Entity, Form, Direction
+from classes.GameObjects import Entity, Form, Direction, Player
+from classes.Weapons import Weapon
 
 pygame.init()
 
@@ -15,8 +16,10 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 
 pygame.display.set_caption("Test field")
 
-new_player = Entity(form=Form.circle, size=100)
+new_player = Player(form=Form.circle, size=100)
 new_player.place((200, 250))
+weapon = Weapon(10, 1, 10, 'images/bullet.png')
+new_player.add_weapon(weapon)
 
 while running:
     screen.fill('black')
@@ -27,7 +30,9 @@ while running:
 
     new_player.draw(screen)
     new_player.draw_health_bar(screen)
-    new_player.move(Direction(-1, 1))
+
+    new_player.move(screen)
+    new_player.make_shoot()
 
     clock.tick(60)
     pygame.display.flip()

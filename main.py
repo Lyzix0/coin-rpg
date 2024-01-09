@@ -2,7 +2,7 @@ import sys
 import math
 import random
 import pygame
-import GameObjects
+from classes import GameObjects
 
 # Инициализация Pygame
 pygame.init()

@@ -1,41 +1,9 @@
-import enum
 import pygame
-import math
-import GameExceptions
+import classes.GameExceptions as GameExceptions
+from classes.Base import Form, Direction
+from classes.Weapons import Weapon
 
 last_shot = pygame.time.get_ticks()
-
-
-class Form(enum.Enum):
-    circle = 1
-    rect = 2
-
-
-class Direction:
-    def __init__(self, x, y):
-        """
-        :param x: Параметр для направления по горизонтали. Принимает значение от -1 до 1
-        :param y: Параметр для направления по вертикали. Принимает значение от -1 до 1
-        """
-        if x in (-1, 0, 1) and y in (-1, 0, 1):
-            self._x = x
-            self._y = y
-        else:
-            raise GameExceptions.DirectInitException()
-
-    @property
-    def x(self):
-        """
-        :return: направление по горизонтали
-        """
-        return self._x
-
-    @property
-    def y(self):
-        """
-        :return: направление по вертикали
-        """
-        return self._y
 
 
 class Object:
@@ -145,6 +113,9 @@ class Entity(Object):
 class Player(Entity):
     def __init__(self, size: int = 10, form: Form = Form.rect, health: float | int = 100, speed: float | int = 3):
         super().__init__(size, form, health, speed)
+        self.current_weapon = None
+        self._weapons = []
+        self._bullets = []
 
     def can_move_left(self):
         return self.position.x + self.size > self.size
@@ -170,5 +141,24 @@ class Player(Entity):
         if keys[pygame.K_s] and self.can_move_down(screen.get_height()):
             self.position.y += self.speed
 
+    def add_weapon(self, weapon: Weapon):
+        current_weapon = weapon
+        self.current_weapon = current_weapon
+        self._weapons.append(current_weapon)
 
+    def make_shoot(self):
+        if not self.current_weapon:
+            return
 
+        bullet = self.current_weapon.shoot(self.position.copy())
+        if bullet:
+            self._bullets.append(bullet)
+
+    def draw(self, screen):
+        # отрисовка всех пуль
+        if self._bullets:
+            for bullet in self._bullets:
+                bullet.draw(screen)
+
+        # рисуем персонажа
+        super().draw(screen)
