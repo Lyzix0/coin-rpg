@@ -2,10 +2,10 @@ import enum
 import pygame
 import math
 import GameExceptions
-from main import player_pos, player_speed, screen_height, player_radius, screen_width, current_time, bullets, \
-    bullet_speed, count_of_pop, bullet_cooldown, last_shot, bullets_from_player, player_health
 
 last_shot = pygame.time.get_ticks()
+
+
 class Form(enum.Enum):
     circle = 1
     rect = 2
@@ -143,52 +143,32 @@ class Entity(Object):
 
 
 class Player(Entity):
-    def __init__(self):
-        self.pos = player_pos
-        self.radius = player_radius
-        self.health = 100
+    def __init__(self, size: int = 10, form: Form = Form.rect, health: float | int = 100, speed: float | int = 3):
+        super().__init__(size, form, health, speed)
 
-    def move(self):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and player_pos[0] > player_radius:
-            player_pos[0] -= player_speed
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and player_pos[0] > player_radius:
-            player_pos[0] -= player_speed
-        if keys[pygame.K_d] and player_pos[0] < screen_width - player_radius:
-            player_pos[0] += player_speed
-        if keys[pygame.K_w] and player_pos[1] > player_radius:
-            player_pos[1] -= player_speed
-        if keys[pygame.K_s] and player_pos[1] < screen_height - player_radius:
-            player_pos[1] += player_speed
+    def can_move_left(self):
+        return self.position.x + self.size > self.size
 
+    def can_move_right(self, screen_width):
+        return self.position.x < screen_width - self.size
+
+    def can_move_up(self):
+        return self.position.y + self.size > self.size
+
+    def can_move_down(self, screen_height):
+        return self.position.y < screen_height - self.size
+
+    def move(self, screen):
         keys = pygame.key.get_pressed()
 
-    def shoot(self):
-        # Стрельба игрока
-        last_shot = pygame.time.get_ticks()
-        if pygame.mouse.get_pressed()[0]:  # Стрельба при нажатии левой кнопки мыши
-            speed_2 = 0
-            if current_time - last_shot > bullet_cooldown:
-                for i in range(count_of_pop):
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    angle = math.atan2(mouse_y - player_pos[1], mouse_x - player_pos[0])
-                    bullet_x = player_pos[0] + player_radius * math.cos(angle)  # Вычисляем начальные координаты пули
-                    bullet_y = player_pos[1] + player_radius * math.sin(angle)
-                    bullet_dx = bullet_speed * math.cos(angle)
-                    bullet_dy = bullet_speed * math.sin(angle)
-                    if (mouse_x > screen_width // 2 and mouse_y < screen_height // 2) or (
-                            mouse_x < screen_width // 2 and mouse_y > screen_height // 2):
-                        new_bullet = [bullet_x, bullet_y, bullet_dx + speed_2, bullet_dy + speed_2]
-                    else:
-                        new_bullet = [bullet_x, bullet_y, bullet_dx + speed_2, bullet_dy - speed_2]
-                    bullets.append(new_bullet)
-                    bullets_from_player.append(new_bullet)
-                    last_shot = current_time
-                    speed_2 += (0.1 * -1)
+        if keys[pygame.K_a] and self.can_move_left():
+            self.position.x -= self.speed
+        if keys[pygame.K_d] and self.can_move_right(screen.get_width()):
+            self.position.x += self.speed
+        if keys[pygame.K_w] and self.can_move_up():
+            self.position.y -= self.speed
+        if keys[pygame.K_s] and self.can_move_down(screen.get_height()):
+            self.position.y += self.speed
 
-    def draw(self, screen):
-        pygame.draw.circle(screen, 'green', (player_pos[0], player_pos[1]), player_radius)
-        pygame.draw.rect(screen, (0, 128, 0), (
-            player_pos[0] - player_radius, player_pos[1] + 30, (player_health / 100) * (player_radius * 2), 5))
+
 
