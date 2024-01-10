@@ -13,7 +13,7 @@ class Weapon:
         self._rate_of_fire = rate_of_fire
         self._bullet_speed = bullet_speed
         self._bullet_image = load_image(bullet_image_path)
-        self._bullet_image = pygame.transform.scale(self._bullet_image, (100, 100))
+        self._bullet_image = pygame.transform.scale(self._bullet_image, (30, 30))
         self._last_shot_time = 0
         # Добавить информацию о размере окна, если она необходима для дальнейших вычислений
 
