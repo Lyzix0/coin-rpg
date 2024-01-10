@@ -32,7 +32,9 @@ while running:
     new_player.draw_health_bar(screen)
 
     new_player.move(screen)
-    new_player.make_shoot()
+
+    if pygame.mouse.get_pressed()[0]:
+        new_player.make_shoot()
 
     clock.tick(60)
     pygame.display.flip()

@@ -1,4 +1,5 @@
 import pygame
+import math
 from classes.Base import load_image
 
 
@@ -8,35 +9,51 @@ class Weapon:
         if not bullet_image_path:
             return
 
-        self._damage = damage  # Урон от одного выстрела
-        self._rate_of_fire = rate_of_fire  # Скорострельность (выстрелов в секунду)
-        self._bullet_speed = bullet_speed  # Скорость полета снаряда
-        self._bullet_image = load_image(bullet_image_path)  # Изображение снаряда
+        self._damage = damage
+        self._rate_of_fire = rate_of_fire
+        self._bullet_speed = bullet_speed
+        self._bullet_image = load_image(bullet_image_path)
         self._bullet_image = pygame.transform.scale(self._bullet_image, (100, 100))
-        self._last_shot_time = 0  # Время последнего выстрела
+        self._last_shot_time = 0
+        # Добавить информацию о размере окна, если она необходима для дальнейших вычислений
 
     def shoot(self, start_position):
-        """
-        Метод для совершения выстрела из оружия.
-
-        :param start_position: начальная позиция снаряда (где находится стрелок)
-        :return: объект Bullet или None, если нельзя стрелять из-за скорострельности
-        """
         current_time = pygame.time.get_ticks()
         if current_time - self._last_shot_time > 1000 / self._rate_of_fire:
             self._last_shot_time = current_time
-            return Bullet(start_position, self._bullet_speed, self._damage, self._bullet_image)
+            # Получаем позицию курсора
+            target_position = pygame.mouse.get_pos()
+
+            # Вычисляем вектор направления
+            direction = pygame.math.Vector2(target_position[0] - start_position.x,
+                                            target_position[1] - start_position.y)
+            direction = direction.normalize()
+
+            return Bullet(start_position, self._bullet_speed, self._damage, self._bullet_image, direction)
         return
 
 
 class Bullet:
-    def __init__(self, position, speed, damage, image):
-        self.position = position
+    def __init__(self, position, speed, damage, image, direction):
+        self.position = pygame.math.Vector2(position)
         self.speed = speed
         self.damage = damage
-        self.image = image
+        self.original_image = image
+        self.direction = direction
+
+        # Вычисляем угол для поворота спрайта
+        angle = self.direction.angle_to(pygame.math.Vector2(1, 0))
+        # Поворачиваем спрайт
+        self.image = pygame.transform.rotate(self.original_image, angle)
+        # Стартовая позиция изображения с учетом поворота
+        self.rect = self.image.get_rect(center=self.position)
+
+    def update(self):
+        self.position += self.direction * self.speed
+        # Обновляем позицию rectangle, используемую для отрисовки
+        self.rect.center = self.position
 
     def draw(self, screen):
-        # Отрисовка снаряда на экране
-        screen.blit(self.image, self.position)
-        self.position.x += self.speed
+        screen.blit(self.image, self.rect)
+        self.update()  # Обновление позиции снаряда при каждом вызове рисования.
+
