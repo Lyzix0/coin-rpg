@@ -85,7 +85,7 @@ class TileMap:
         """
         spritesheet = load_image(path)
         new_width = self.tile_size / (spritesheet.get_width() / rows) * spritesheet.get_width()
-        new_height = self.tile_size / (spritesheet.get_height() / rows) * spritesheet.get_height()
+        new_height = self.tile_size / (spritesheet.get_height() / cols) * spritesheet.get_height()
 
         spritesheet = pygame.transform.scale(spritesheet, (new_width, new_height))
 

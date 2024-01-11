@@ -2,7 +2,6 @@ import enum
 import os
 import sys
 import pygame
-
 from classes import GameExceptions
 
 
@@ -53,3 +52,10 @@ def load_image(path: str, colorkey='black'):
     else:
         image = image.convert_alpha()
     return image
+
+
+def rotate(img, pos, angle):
+    w, h = img.get_size()
+    img2 = pygame.Surface((w*2, h*2), pygame.SRCALPHA)
+    img2.blit(img, (w-pos[0], h-pos[1]))
+    return pygame.transform.rotate(img2, angle)

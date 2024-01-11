@@ -1,14 +1,13 @@
 import pygame
 import classes.GameExceptions as GameExceptions
-from classes.Base import Form, Direction
+from classes.Base import Form, Direction, rotate
 from classes.Weapons import Weapon
 
 last_shot = pygame.time.get_ticks()
 
 
 class Object:
-    def __init__(self, size: int = 10, form: Form = Form.rect):
-        self.form = form
+    def __init__(self, size: int = 10):
         self._position = None
         self.size = size
         self.placed = False
@@ -42,18 +41,13 @@ class Object:
         if not self.placed:
             raise GameExceptions.NotPlacedException
 
-        match self.form:
-            case Form.rect:
-                rect = pygame.Rect(self.position.x, self.position.y, self.size, self.size)
-                pygame.draw.rect(screen, 'green', rect)
-            case Form.circle:
-                center = self.position.x + self.size / 2, self.position.y + self.size / 2
-                pygame.draw.circle(screen, 'green', center, self.size / 2)
+        rect = pygame.Rect(self.position.x, self.position.y, self.size, self.size)
+        pygame.draw.rect(screen, 'green', rect)
 
 
 class Entity(Object):
-    def __init__(self, size: int = 10, form: Form = Form.rect, health: float | int = 100, speed: float | int = 1):
-        super().__init__(size, form)
+    def __init__(self, size: int = 10, health: float | int = 100, speed: float | int = 1):
+        super().__init__(size)
         self._health = health
         self.speed = speed
         self.alive = True
@@ -110,12 +104,13 @@ class Entity(Object):
         self.position.y += dy * self.speed
 
 
-class Player(Entity):
-    def __init__(self, size: int = 10, form: Form = Form.rect, health: float | int = 100, speed: float | int = 3):
-        super().__init__(size, form, health, speed)
+class Player(Entity, pygame.sprite.Sprite):
+    def __init__(self, size: int = 10, health: float | int = 100, speed: float | int = 3):
+        super().__init__(size, health, speed)
         self.current_weapon = None
         self._weapons = []
         self._bullets = []
+        self.sprite = None
 
     def can_move_left(self):
         return self.position.x + self.size > self.size
@@ -130,12 +125,15 @@ class Player(Entity):
         return self.position.y < screen_height - self.size
 
     def move(self, screen):
+        facing_right = None
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_a] and self.can_move_left():
+            facing_right = True
             self.position.x -= self.speed
         if keys[pygame.K_d] and self.can_move_right(screen.get_width()):
             self.position.x += self.speed
+            facing_right = False
         if keys[pygame.K_w] and self.can_move_up():
             self.position.y -= self.speed
         if keys[pygame.K_s] and self.can_move_down(screen.get_height()):
@@ -155,10 +153,14 @@ class Player(Entity):
             self._bullets.append(bullet)
 
     def draw(self, screen):
-        # отрисовка всех пуль
-        if self._bullets:
-            for bullet in self._bullets:
-                bullet.draw(screen)
+        if not self.sprite:
+            return
+        else:
+            screen.blit(self.sprite, self.position)
 
-        # рисуем персонажа
-        super().draw(screen)
+        for bullet in self._bullets:
+            bullet.draw(screen)
+
+    def set_sprite(self, screen, sprite: pygame.Surface):
+        self.sprite = sprite
+
