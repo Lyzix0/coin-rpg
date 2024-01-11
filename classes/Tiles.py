@@ -6,6 +6,16 @@ from pygame import Surface
 from classes.Base import load_image
 
 
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0):
+        pygame.sprite.Sprite.__init__(self)
+        self.x = x
+        self.y = y
+
+        self.image = surface
+        self.rect = self.image.get_rect()
+
+
 class TileImages:
     def __init__(self, tile_size: int = 32):
         self.tile_size = tile_size
@@ -31,15 +41,18 @@ class TileImages:
 
 
 class TileMap:
-    def __init__(self, tile_size: int = 32):
-        self.tile_map = None
+    def __init__(self, tile_size: int = 32, path: str = None, rows=1, cols=1):
+        self._tile_map_surface = None
+        self._current_tile_map = []
         self.tile_size = tile_size
 
-    def draw_tilemap(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
-        if self.tile_map is None:
+        self._load_tilemap(path, rows, cols)
+
+    def draw_all_tiles(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
+        if self._tile_map_surface is None:
             raise TypeError("Нельзя отрисовать пустой tilemap!")
 
-        for row in self.tile_map:
+        for row in self._tile_map_surface:
             temp_x_offset = x_offset
             for sprite in row:
                 if sprite:
@@ -47,7 +60,18 @@ class TileMap:
                 temp_x_offset += self.tile_size
             y_offset += self.tile_size
 
-    def load_tilemap(self, path, rows=1, cols=1):
+    def draw_tiles(self, screen):
+        for tile in self._current_tile_map:
+            screen.blit(tile.image, tile.rect)
+
+    def get_tile(self, row, col):
+        new_tile = Tile(self._tile_map_surface[row][col])
+        return new_tile
+
+    def add_tile(self, tile: Tile):
+        self._current_tile_map.append(tile)
+
+    def _load_tilemap(self, path, rows=1, cols=1):
         """
         Загружает и нарезает спрайт-лист на отдельные кадры (спрайты).
 
@@ -73,7 +97,14 @@ class TileMap:
                 y = row * self.tile_size
                 rect = pygame.Rect(x, y, self.tile_size, self.tile_size)
                 sprite = spritesheet.subsurface(rect)
+
                 temp.append(sprite)
+
             sprites.append(temp)
 
-        self.tile_map = sprites
+        self._tile_map_surface = sprites
+
+
+
+
+

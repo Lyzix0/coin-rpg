@@ -24,7 +24,10 @@ new_player.place((200, 250))
 weapon = Weapon(10, 1, 10, 'images/bullet.png')
 new_player.add_weapon(weapon)
 
-level1 = TileMap(50)
+level1 = TileMap(50, 'images/tilesets/Dungeon_Tileset.png', rows=10, cols=10)
+
+tile = level1.get_tile(9, 8)
+level1.add_tile(tile)
 
 level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
@@ -32,8 +35,6 @@ level1_map = [
     ["grass", "grass", "dirt", "grass", "dirt", "grass"],
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
 ]
-
-level1.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10)
 
 
 while running:
@@ -43,7 +44,8 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    level1.draw_tilemap(screen, 150, 30)
+    # level1.draw_all_tiles(screen, 150, 30)
+    level1.draw_tiles(screen)
 
     new_player.draw(screen)
     new_player.draw_health_bar(screen)
