@@ -14,7 +14,6 @@ class SpriteSheet:
             rect = pygame.Rect(x, y, tile_size, tile_size)
             sprite = spritesheet.subsurface(rect)
 
-
             self.sprites.append(sprite)
 
     def draw_sprite(self, screen: pygame.Surface, sprite_number: int):

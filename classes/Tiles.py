@@ -9,11 +9,27 @@ from classes.Base import load_image
 class Tile(pygame.sprite.Sprite):
     def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0):
         pygame.sprite.Sprite.__init__(self)
-        self.x = x
-        self.y = y
+        self._x = x
+        self._y = y
 
         self.image = surface
-        self.rect = self.image.get_rect()
+        self.rect = [self._x, self._y]
+
+    def set_x(self, new_x):
+        self._x = new_x
+        self.rect[0] = self._x
+
+    def set_y(self, new_y):
+        self._y = new_y
+        self.rect[1] = self._y
+
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def y(self):
+        return self._y
 
 
 class TileImages:
@@ -41,12 +57,10 @@ class TileImages:
 
 
 class TileMap:
-    def __init__(self, tile_size: int = 32, path: str = None, rows=1, cols=1):
+    def __init__(self):
         self._tile_map_surface = None
         self._current_tile_map = []
-        self.tile_size = tile_size
-
-        self._load_tilemap(path, rows, cols)
+        self.tile_size = 0
 
     def draw_all_tiles(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
         if self._tile_map_surface is None:
@@ -71,7 +85,7 @@ class TileMap:
     def add_tile(self, tile: Tile):
         self._current_tile_map.append(tile)
 
-    def _load_tilemap(self, path, rows=1, cols=1):
+    def load_tilemap(self, path, rows=1, cols=1, tile_size=32):
         """
         Загружает и нарезает спрайт-лист на отдельные кадры (спрайты).
 
@@ -79,10 +93,12 @@ class TileMap:
             path: Путь к файлу спрайт-листа.
             rows: Количество рядов спрайтов в спрайт-листе.
             cols: Количество столбцов спрайтов в спрайт-листе.
+            tile_size: размер тайла в пикселях
 
         Returns:
             Список Pygame Surface, каждый из которых является отдельным спрайтом.
         """
+        self.tile_size = tile_size
         spritesheet = load_image(path)
         new_width = self.tile_size / (spritesheet.get_width() / rows) * spritesheet.get_width()
         new_height = self.tile_size / (spritesheet.get_height() / cols) * spritesheet.get_height()
