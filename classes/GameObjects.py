@@ -3,6 +3,7 @@ import classes.GameExceptions as GameExceptions
 from classes.Base import Form, Direction, rotate
 from classes.Weapons import Weapon
 from classes.Sprites import *
+
 last_shot = pygame.time.get_ticks()
 
 
@@ -105,13 +106,20 @@ class Entity(Object):
 
 
 class Player(Entity, pygame.sprite.Sprite):
-    def __init__(self, size: int = 10, health: float | int = 100, speed: float | int = 3):
+    def __init__(self, size: int = 10, health: float | int = 100, speed: float | int = 3, animation_delay: int = 250):
         super().__init__(size, health, speed)
         self.current_weapon = None
         self._weapons = []
         self._bullets = []
-        self.sprite = None
+
+        self.sprite_number = 0
+        self.sprites = []
+
         self.facing_right = True
+        self.moving = False
+
+        self.animation_delay = animation_delay
+        self._last_time_update = 0
 
     def can_move_left(self):
         return self.position.x + self.size > self.size
@@ -129,18 +137,22 @@ class Player(Entity, pygame.sprite.Sprite):
 
         keys = pygame.key.get_pressed()
 
+        self.moving = False
+
         if keys[pygame.K_a] and self.can_move_left():
             self.facing_right = False
             self.position.x -= self.speed
-            idle_sprites = SpriteSheet("images/player/idle/idle_sprites_revers.png", 4, 50, 'white')
+            self.moving = True
         if keys[pygame.K_d] and self.can_move_right(screen.get_width()):
             self.position.x += self.speed
             self.facing_right = True
-            idle_sprites = SpriteSheet("images/player/idle/idle_sprites.png", 4, 50, 'white')
+            self.moving = True
         if keys[pygame.K_w] and self.can_move_up():
             self.position.y -= self.speed
+            self.moving = True
         if keys[pygame.K_s] and self.can_move_down(screen.get_height()):
             self.position.y += self.speed
+            self.moving = True
 
     def add_weapon(self, weapon: Weapon):
         current_weapon = weapon
@@ -156,17 +168,27 @@ class Player(Entity, pygame.sprite.Sprite):
             self._bullets.append(bullet)
 
     def draw(self, screen):
-        if not self.sprite:
-            return
+        now = pygame.time.get_ticks()
+
+        if now - self._last_time_update > self.animation_delay:
+            self._last_time_update = now
+            self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
+
+        if not self.facing_right:
+            sprite = pygame.transform.flip(self.sprites[self.sprite_number], True, False)
         else:
-            screen.blit(self.sprite, self.position)
+            sprite = self.sprites[self.sprite_number]
+
+        screen.blit(sprite, self.position)
 
         for bullet in self._bullets:
             bullet.draw(screen)
 
-    def set_sprite(self, screen, sprite: pygame.Surface):
-        if self.facing_right:
-            self.sprite = sprite
-        else:
-            self.sprite = pygame.transform.flip(sprite, True, False)
+    def set_sprites(self, sprites):
+        if self.sprites == sprites:
+            return
+        self.sprite_number = 0
+        self.sprites.clear()
+        for sprite in sprites:
+            self.sprites.append(sprite)
 

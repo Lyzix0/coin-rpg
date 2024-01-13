@@ -19,10 +19,15 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 
 pygame.display.set_caption("Test field")
 
-new_player = Player(size=50)
+new_player = Player(size=50, animation_delay=200)
 new_player.place((200, 250))
 weapon = Weapon(10, 1, 10, 'images/bullet.png')
 new_player.add_weapon(weapon)
+
+idle_sprites = SpriteSheet('images/player/idle/idle_sprites.png', 4, 50)
+run_sprites = SpriteSheet('images/player/run/run_sprites.png', 6, 50)
+
+new_player.set_sprites(idle_sprites.sprites)
 
 level1 = TileMap(50, 'images/tilesets/Dungeon_Tileset.png', rows=10, cols=10)
 
@@ -36,14 +41,9 @@ level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
 ]
 
-idle_sprites = SpriteSheet('images/player/idle/idle_sprites.png', 4, 50, 'white')
-
-current_sprite = 0
-last_update_time = 0
-animation_delay = 250
 
 while running:
-    screen.fill('black')
+    screen.fill('white')
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -53,21 +53,19 @@ while running:
     level1.draw_tiles(screen)
     idle_sprites.draw_sprite(screen, 0)
 
-    now = pygame.time.get_ticks()
-
-    if now - last_update_time > animation_delay:
-        last_update_time = now
-        current_sprite = (current_sprite + 1) % len(idle_sprites.sprites)
-
-    new_player.set_sprite(screen, idle_sprites.sprites[current_sprite])
-    new_player.draw(screen)
-
-    new_player.draw_health_bar(screen)
-
     new_player.move(screen)
+
+    if new_player.moving:
+        new_player.set_sprites(run_sprites.sprites)
+    else:
+        new_player.set_sprites(idle_sprites.sprites)
+
+    new_player.draw(screen)
 
     if pygame.mouse.get_pressed()[0]:
         new_player.make_shoot()
+
+    new_player.draw_health_bar(screen)
 
     clock.tick(60)
     pygame.display.flip()
