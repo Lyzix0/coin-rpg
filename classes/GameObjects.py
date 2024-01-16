@@ -6,11 +6,10 @@ from classes.Base import Form, Direction, rotate
 from classes.Weapons import Weapon
 from classes.Sprites import *
 from classes.Tiles import *
-
 last_shot = pygame.time.get_ticks()
 
 
-class Object:
+class Object():
     def __init__(self, size: int = 10):
         self._position = None
         self.size = size
@@ -124,6 +123,9 @@ class Player(Entity, pygame.sprite.Sprite):
         self.animation_delay = animation_delay
         self._last_time_update = 0
 
+    def apply_healing(self, amount):
+        self._health += amount
+
     def can_move_left(self):
         return self.position.x + self.size > self.size
 
@@ -199,6 +201,7 @@ class Player(Entity, pygame.sprite.Sprite):
 class Inventory:
 
     def __init__(self, screen):
+        self.cells = {"1": "", "2": "", "3": "", "4": "", "5": "", "6": "", "7": "", "8": "", "9": "", "10": ""}
         self.screen = screen
         self.height = 50
         self.width = 500
@@ -212,20 +215,45 @@ class Inventory:
         for _ in range(0, 500, 50):
             pygame.draw.line(self.screen, (255, 255, 255), [150 + _, 550], [150 + _, 600], 3)
 
+    def add_iteam(self, iteam: str, icon: str):
+        for i, g in self.cells.items():
+            if g == "":
+                self.cells[i] = iteam
+                self.a = i
+                break
+        self.icon = pygame.image.load(icon)
+        icon_size = (30, 30)
+        icon2 = pygame.transform.scale(self.icon, icon_size)
+        self.screen.blit(icon2, (150 + int(self.a)*20, 575))
 
 
-class HealthPotion(Object):
-    def __init__(self):
-        super.__init__(self._position)
-        self.x = 100
-        self.y = 100
+class HealingPotion(Object):
+    def __init__(self, size: int = 10, healing_power: int = 20, active_objects: list = None):
+        super().__init__(size)
+        self.healing_power = healing_power
+        self.icon = pygame.image.load("images/tilesets/healt.png")
+        self.alive = True
+        self.active_objects = active_objects
 
-    def draw(self):
-        level1 = TileMap()
-        heal = level1.get_tile(9, 8)
-        heal.set_x(300)
-        heal.set_y(200)
-        level1.add_tile(heal)
+    def draw(self, screen: pygame.surface):
+        if not self.placed:
+            raise GameExceptions.NotPlacedException
+        rect = pygame.Rect(self.position.x, self.position.y, self.size/3, self.size/3)
+        pygame.draw.rect(screen, 'green', rect)
+        icon_size = (self.size, self.size)
+        icon = pygame.transform.scale(self.icon, icon_size)
+        screen.blit(icon, (self.position.x-10, self.position.y-10))
 
-    def is_collided(self, sprite):
-        pass
+
+
+    def handle_collision(self, player):
+        if self.alive and self.position.distance_to(player.position) < (self.size + player.size) / 2:
+            Inventory.add_iteam("Зелье здоровья", "images/tilesets/healt.png")
+            self._die()
+
+    def _die(self):
+        self.alive = False
+        print("Зелье исцеления использовано!")
+        if self.active_objects is not None:
+            self.active_objects.remove(self)
+

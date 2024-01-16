@@ -2,7 +2,7 @@ import sys
 import pygame
 from classes.Tiles import *
 from classes.Sprites import *
-from classes.GameObjects import Entity, Form, Direction, Player, Inventory
+from classes.GameObjects import Entity, Form, Direction, Player, Inventory, HealingPotion
 from classes.Weapons import Weapon
 
 pygame.init()
@@ -37,6 +37,9 @@ heal.set_x(300)
 heal.set_y(200)
 
 level1.add_tile(heal)
+
+healing_potion = HealingPotion(size=30, healing_power=30)
+healing_potion.place((250, 250))
 
 level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
@@ -76,6 +79,10 @@ while running:
     level1.draw_tiles(screen)
 
     new_player.draw(screen)
+
+    healing_potion.draw(screen)
+
+    healing_potion.handle_collision(new_player)
 
     if pygame.mouse.get_pressed()[0]:
         new_player.make_shoot()
