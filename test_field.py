@@ -2,7 +2,7 @@ import sys
 import pygame
 from classes.Tiles import *
 from classes.Sprites import *
-from classes.GameObjects import Entity, Form, Direction, Player
+from classes.GameObjects import Entity, Form, Direction, Player, Inventory
 from classes.Weapons import Weapon
 
 pygame.init()
@@ -25,7 +25,7 @@ weapon = Weapon(10, 1, 10, 'images/bullet.png')
 new_player.add_weapon(weapon)
 
 idle_sprites = SpriteSheet('images/player/idle/idle_sprites.png', 4, 50)
-run_sprites = SpriteSheet('images/player/run/run_sprites.png', 6, 50)
+run_sprites = SpriteSheet('images/player/Run/run_sprites.png', 6, 50)
 
 new_player.set_sprites(idle_sprites.sprites)
 
@@ -46,7 +46,7 @@ level1_map = [
 ]
 
 walls = TileMap()
-
+inventory = Inventory(screen)
 for i in range(6):
     for j in range(5):
         tile = level1.get_tile(j, i)
@@ -81,7 +81,7 @@ while running:
         new_player.make_shoot()
 
     new_player.draw_health_bar(screen)
-
+    inventory.draw_inventory()
     clock.tick(60)
     pygame.display.flip()
 

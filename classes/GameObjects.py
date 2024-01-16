@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import pygame
 import classes.GameExceptions as GameExceptions
 from classes.Base import Form, Direction, rotate
 from classes.Weapons import Weapon
 from classes.Sprites import *
+from classes.Tiles import *
 
 last_shot = pygame.time.get_ticks()
 
@@ -192,3 +195,37 @@ class Player(Entity, pygame.sprite.Sprite):
         for sprite in sprites:
             self.sprites.append(sprite)
 
+
+class Inventory:
+
+    def __init__(self, screen):
+        self.screen = screen
+        self.height = 50
+        self.width = 500
+        self.x = 150
+        self.y = 550
+        self.inventory_color = (255, 255, 255)
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def draw_inventory(self):
+        pygame.draw.rect(self.screen, self.inventory_color, self.rect, 2)
+        for _ in range(0, 500, 50):
+            pygame.draw.line(self.screen, (255, 255, 255), [150 + _, 550], [150 + _, 600], 3)
+
+
+
+class HealthPotion(Object):
+    def __init__(self):
+        super.__init__(self._position)
+        self.x = 100
+        self.y = 100
+
+    def draw(self):
+        level1 = TileMap()
+        heal = level1.get_tile(9, 8)
+        heal.set_x(300)
+        heal.set_y(200)
+        level1.add_tile(heal)
+
+    def is_collided(self, sprite):
+        pass
