@@ -11,27 +11,22 @@ from classes.Base import load_image
 class Tile(pygame.sprite.Sprite):
     def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0):
         pygame.sprite.Sprite.__init__(self)
-        self._x = x
-        self._y = y
-
         self.image = surface
-        self.rect = [self._x, self._y]
+        self.rect = pygame.Rect(x, y, surface.get_width(), surface.get_height())
 
     def set_x(self, new_x):
-        self._x = new_x
-        self.rect[0] = self._x
+        self.rect.x = new_x
 
     def set_y(self, new_y):
-        self._y = new_y
-        self.rect[1] = self._y
+        self.rect.y = new_y
 
     @property
     def x(self):
-        return self._x
+        return self.rect.x
 
     @property
     def y(self):
-        return self._y
+        return self.rect.y
 
 
 class TileImages:
@@ -61,7 +56,7 @@ class TileImages:
 class TileMap:
     def __init__(self):
         self._tile_map_surface = None
-        self._current_tile_map = []
+        self.current_tile_map = []
         self.tile_size = 0
 
     def draw_all_tiles(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
@@ -77,7 +72,7 @@ class TileMap:
             y_offset += self.tile_size
 
     def draw_tiles(self, screen):
-        for tile in self._current_tile_map:
+        for tile in self.current_tile_map:
             screen.blit(tile.image, tile.rect)
 
     def get_tile(self, row, col):
@@ -85,7 +80,7 @@ class TileMap:
         return new_tile
 
     def add_tile(self, tile: Tile):
-        self._current_tile_map.append(tile)
+        self.current_tile_map.append(tile)
 
     def load_tilemap(self, path, rows=1, cols=1, tile_size=32):
         """

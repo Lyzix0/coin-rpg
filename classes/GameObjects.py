@@ -6,10 +6,11 @@ from classes.Base import Form, Direction, rotate
 from classes.Weapons import Weapon
 from classes.Sprites import *
 from classes.Tiles import *
+
 last_shot = pygame.time.get_ticks()
 
 
-class Object():
+class Object:
     def __init__(self, size: int = 10):
         self._position = None
         self.size = size
@@ -122,12 +123,13 @@ class Player(Entity, pygame.sprite.Sprite):
 
         self.animation_delay = animation_delay
         self._last_time_update = 0
+        self.rect = pygame.Rect(0, 0, 32, 32)
 
     def apply_healing(self, amount):
         self._health += amount
 
     def can_move_left(self):
-        return self.position.x + self.size > self.size
+        return self.position.x + self.size + 10 > self.size
 
     def can_move_right(self, screen_width):
         return self.position.x < screen_width - self.size
@@ -138,26 +140,46 @@ class Player(Entity, pygame.sprite.Sprite):
     def can_move_down(self, screen_height):
         return self.position.y < screen_height - self.size
 
-    def move(self, screen):
-
+    def move(self, screen, walls=None):
         keys = pygame.key.get_pressed()
-
-        self.moving = False
+        dx, dy = 0, 0
 
         if keys[pygame.K_a] and self.can_move_left():
-            self.facing_right = False
-            self.position.x -= self.speed
-            self.moving = True
+            dx -= self.speed
         if keys[pygame.K_d] and self.can_move_right(screen.get_width()):
-            self.position.x += self.speed
-            self.facing_right = True
-            self.moving = True
+            dx += self.speed
         if keys[pygame.K_w] and self.can_move_up():
-            self.position.y -= self.speed
-            self.moving = True
+            dy -= self.speed
         if keys[pygame.K_s] and self.can_move_down(screen.get_height()):
-            self.position.y += self.speed
-            self.moving = True
+            dy += self.speed
+
+        rect_after_move = self.rect.copy()
+        rect_after_move.x += dx
+        rect_after_move.y += dy
+
+        collision_detected = False
+        if walls:
+            # Задаем значения смещения для каждой стороны (left, right, top, bottom)
+            offset_left = 12
+            offset_right = 12
+            offset_top = 12
+            offset_bottom = 36  # Уменьшаем это значение, если хотим уменьшить отклонение снизу
+
+            for wall in walls.current_tile_map:
+                if (rect_after_move.right > wall.rect.left + offset_left and
+                        rect_after_move.left < wall.rect.right - offset_right and
+                        rect_after_move.bottom > wall.rect.top and
+                        rect_after_move.top < wall.rect.bottom - offset_bottom):
+                    collision_detected = True
+                    break
+
+        if not collision_detected:
+            self.position.x += dx
+            self.position.y += dy
+            self.facing_right = dx > 0
+
+        self.moving = dx != 0 or dy != 0
+        self.rect = pygame.Rect(self.position.x, self.position.y, self.size, self.size)
 
     def add_weapon(self, weapon: Weapon):
         current_weapon = weapon
@@ -215,16 +237,18 @@ class Inventory:
         for _ in range(0, 500, 50):
             pygame.draw.line(self.screen, (255, 255, 255), [150 + _, 550], [150 + _, 600], 3)
 
-    def add_iteam(self, iteam: str, icon: str):
+    def add_item(self, item: str, icon: str):
+        a = 0
         for i, g in self.cells.items():
             if g == "":
-                self.cells[i] = iteam
-                self.a = i
+                self.cells[i] = item
+                a = i
                 break
+
         self.icon = pygame.image.load(icon)
         icon_size = (30, 30)
         icon2 = pygame.transform.scale(self.icon, icon_size)
-        self.screen.blit(icon2, (150 + int(self.a)*20, 575))
+        self.screen.blit(icon2, (150 + int(a) * 20, 575))
 
 
 class HealingPotion(Object):
@@ -238,17 +262,15 @@ class HealingPotion(Object):
     def draw(self, screen: pygame.surface):
         if not self.placed:
             raise GameExceptions.NotPlacedException
-        rect = pygame.Rect(self.position.x, self.position.y, self.size/3, self.size/3)
+        rect = pygame.Rect(self.position.x, self.position.y, self.size / 3, self.size / 3)
         pygame.draw.rect(screen, 'green', rect)
         icon_size = (self.size, self.size)
         icon = pygame.transform.scale(self.icon, icon_size)
-        screen.blit(icon, (self.position.x-10, self.position.y-10))
-
-
+        screen.blit(icon, (self.position.x - 10, self.position.y - 10))
 
     def handle_collision(self, player):
         if self.alive and self.position.distance_to(player.position) < (self.size + player.size) / 2:
-            Inventory.add_iteam("Зелье здоровья", "images/tilesets/healt.png")
+            Inventory.add_item("Зелье здоровья", "../images/tilesets/healt.png")
             self._die()
 
     def _die(self):
@@ -256,4 +278,3 @@ class HealingPotion(Object):
         print("Зелье исцеления использовано!")
         if self.active_objects is not None:
             self.active_objects.remove(self)
-
