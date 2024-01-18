@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import pygame
-import classes.GameExceptions as GameExceptions
-from classes.Base import Form, Direction, rotate
-from classes.Weapons import Weapon
-from classes.Sprites import *
-from classes.Tiles import *
+import scripts.GameExceptions as GameExceptions
+from scripts.Base import Form, Direction, rotate
+from scripts.Weapons import Weapon
+from scripts.Sprites import *
+from scripts.Tiles import *
 
 last_shot = pygame.time.get_ticks()
 

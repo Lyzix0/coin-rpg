@@ -1,5 +1,5 @@
 import pygame
-from classes.Base import load_image
+from scripts.Base import load_image
 
 
 class SpriteSheet:

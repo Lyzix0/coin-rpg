@@ -1,6 +1,6 @@
 import pygame
-from classes import GameExceptions
-from classes.GameObjects import Object
+from scripts import GameExceptions
+from scripts.GameObjects import Object
 
 
 class Cell:

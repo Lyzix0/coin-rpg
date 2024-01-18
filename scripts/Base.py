@@ -2,7 +2,7 @@ import enum
 import os
 import sys
 import pygame
-from classes import GameExceptions
+from scripts import GameExceptions
 
 
 class Form(enum.Enum):

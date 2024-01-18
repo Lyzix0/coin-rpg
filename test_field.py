@@ -1,10 +1,10 @@
 import sys
 import pygame
-from classes.Tiles import *
-from classes.Sprites import *
-from classes.Inventory import *
-from classes.GameObjects import Entity, Form, Direction, Player
-from classes.Weapons import Weapon
+from scripts.Tiles import *
+from scripts.Sprites import *
+from scripts.Inventory import *
+from scripts.GameObjects import Entity, Form, Direction, Player
+from scripts.Weapons import Weapon
 
 pygame.init()
 

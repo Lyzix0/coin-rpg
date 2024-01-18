@@ -5,7 +5,7 @@ from typing import overload
 import pygame
 from pygame import Surface
 
-from classes.Base import load_image
+from scripts.Base import load_image
 
 
 class Tile(pygame.sprite.Sprite):
@@ -55,7 +55,7 @@ class TileImages:
 
 class TileMap:
     def __init__(self):
-        self._tile_map_surface = None
+        self.tile_map_surface = None
         self.current_tile_map = []
         self.tile_size = 0
 
