@@ -25,10 +25,11 @@ class Inventory:
         pygame.draw.rect(self.screen, self.inventory_color, self.rect, 2)
         for _ in range(0, 500, 50):
             pygame.draw.line(self.screen, (255, 255, 255), [150 + _, 550], [150 + _, 600], 3)
-        for i in range(10):
-            self.screen.blit(self.cells[i].image, (150 + i * 20, 575))
+        for i in range(min(len(self.cells), 10)):
+            self.screen.blit(self.cells[i].image, (155 + i * 50, 555))
 
     def add_item(self, cell: Cell):
+        cell.image = pygame.transform.scale(cell.image, (40, 40))
         self.cells.append(cell)
 
 
@@ -43,6 +44,8 @@ class HealingPotion(Object):
     def draw(self, screen: pygame.surface):
         if not self.placed:
             raise GameExceptions.NotPlacedException
+        if not self.alive:
+            return
         rect = pygame.Rect(self.position.x, self.position.y, self.size / 3 * 1.4, self.size / 3)
         pygame.draw.rect(screen, 'green', rect)
         icon_size = (self.size, self.size)
