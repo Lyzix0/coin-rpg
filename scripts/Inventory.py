@@ -3,6 +3,7 @@ from scripts import GameExceptions
 from scripts.GameObjects import Object
 
 
+
 class Cell:
     def __init__(self, image: pygame.surface, cell_name: str):
         self.image = image
@@ -11,10 +12,11 @@ class Cell:
 
 class Inventory:
 
-    def __init__(self, screen):
+    def __init__(self, screen, player):
         self.cells = []
         self.screen = screen
         self.height = 50
+        self.player = player
         self.width = 500
         self.x = 150
         self.y = 550
@@ -31,6 +33,13 @@ class Inventory:
     def add_item(self, cell: Cell):
         cell.image = pygame.transform.scale(cell.image, (40, 40))
         self.cells.append(cell)
+
+    def use_by_index(self, index: int):
+        if 0 <= index < len(self.cells):
+            cell = self.cells[index]
+            if cell.name == "xdd":
+                self.player.apply_healing(20)
+                self.cells.pop(index)
 
 
 class HealingPotion(Object):
@@ -63,3 +72,6 @@ class HealingPotion(Object):
         print("Зелье исцеления использовано!")
         if self.active_objects is not None:
             self.active_objects.remove(self)
+
+
+
