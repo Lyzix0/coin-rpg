@@ -3,7 +3,6 @@ from scripts import GameExceptions
 from scripts.GameObjects import Object
 
 
-
 class Cell:
     def __init__(self, image: pygame.surface, cell_name: str):
         self.image = image
@@ -49,7 +48,6 @@ class Inventory:
                 pygame.time.delay(200)
 
 
-
 class SpeedPotion(Object):
     def __init__(self, icon_path: str, size: int = 10, speed: int = 2, active_objects: list = None):
         super().__init__(size)
@@ -79,6 +77,7 @@ class SpeedPotion(Object):
         self.alive = False
         if self.active_objects is not None:
             self.active_objects.remove(self)
+
 
 class HealingPotion(Object):
     def __init__(self, icon_path: str, size: int = 10, healing_power: int = 20, active_objects: list = None):

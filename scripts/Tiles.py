@@ -1,17 +1,14 @@
 from __future__ import annotations
-
-from typing import overload
-
 import pygame
-from pygame import Surface
-
 from scripts.Base import load_image
 
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0):
+    def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0, row: int = 0, col: int = 0):
         pygame.sprite.Sprite.__init__(self)
         self.image = surface
+        self.col = col
+        self.row = row
         self.rect = pygame.Rect(x, y, surface.get_width(), surface.get_height())
 
     def set_x(self, new_x):
@@ -55,6 +52,7 @@ class TileImages:
 
 class TileMap:
     def __init__(self):
+        self.path = None
         self.rows = 0
         self.cols = 0
         self.tile_map_surface = None
@@ -62,10 +60,10 @@ class TileMap:
         self.tile_size = 0
 
     def draw_all_tiles(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
-        if self._tile_map_surface is None:
+        if self.tile_map_surface is None:
             raise TypeError("Нельзя отрисовать пустой tilemap!")
 
-        for row in self._tile_map_surface:
+        for row in self.tile_map_surface:
             temp_x_offset = x_offset
             for sprite in row:
                 if sprite:
@@ -78,7 +76,7 @@ class TileMap:
             screen.blit(tile.image, tile.rect)
 
     def get_tile(self, row, col):
-        new_tile = Tile(self._tile_map_surface[row][col])
+        new_tile = Tile(self.tile_map_surface[row][col], row=row, col=col)
         return new_tile
 
     def add_tile(self, tile: Tile):
@@ -100,6 +98,7 @@ class TileMap:
         self.cols = cols
         self.rows = rows
         self.tile_size = tile_size
+        self.path = path
         spritesheet = load_image(path)
         new_width = self.tile_size / (spritesheet.get_width() / rows) * spritesheet.get_width()
         new_height = self.tile_size / (spritesheet.get_height() / cols) * spritesheet.get_height()
@@ -119,7 +118,7 @@ class TileMap:
 
             sprites.append(temp)
 
-        self._tile_map_surface = sprites
+        self.tile_map_surface = sprites
 
 
 

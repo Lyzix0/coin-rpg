@@ -1,6 +1,6 @@
 import pygame
-from scripts.Tiles import TileImages, TileMap
-
+from scripts.Tiles import TileImages, TileMap, Tile
+import sqlite3
 
 pygame.init()
 
@@ -23,7 +23,7 @@ map_width, map_height = 20, 15
 tile_size = 32
 
 
-empty_map = [["" for _ in range(map_width)] for _ in range(map_height)]
+level_map = [["" for _ in range(map_width)] for _ in range(map_height)]
 
 running = True
 current_tile_row = 0
@@ -42,14 +42,14 @@ while running:
                     new_tile = tile_map.get_tile(current_tile_row, current_tile_col)
                     new_tile.rect = pygame.Rect(tile_x * tile_size, tile_y * tile_size, 32, 32)
                     tile_map.add_tile(new_tile)
-                    empty_map[tile_y][tile_x] = current_tile
+                    level_map[tile_y][tile_x] = new_tile
             elif event.button == 3:
                 tile_x = event.pos[0] // tile_size
                 tile_y = event.pos[1] // tile_size
                 if 0 <= tile_x < map_width and 0 <= tile_y < map_height:
                     tile_map.current_tile_map = [tile for tile in tile_map.current_tile_map
                                                  if tile.x != tile_x * tile_size or tile.y != tile_y * tile_size]
-                    empty_map[tile_y][tile_x] = ""
+                    level_map[tile_y][tile_x] = ""
 
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
@@ -61,6 +61,22 @@ while running:
                 current_tile_col = (current_tile_col - 1) % tile_map.cols
             elif event.key == pygame.K_RIGHT:
                 current_tile_col = (current_tile_col + 1) % tile_map.cols
+
+            if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                db = sqlite3.connect("levels.db")
+                cursor = db.cursor()
+                for row in level_map:
+                    for item in row:
+                        if isinstance(item, Tile):
+                            r = item.rect.copy()
+
+                            path = tile_map.path
+                            row = item.row
+                            col = item.col
+                            x, y, width, height = r.x, r.y, r.width, r.height
+                            cursor.execute(f'INSERT INTO level1 VALUES ({path}, {row}, {col}, {x}, {y}, {width}, {height})')
+
+                            db.commit()
 
             current_tile = tile_map.get_tile(current_tile_row, current_tile_col)
 

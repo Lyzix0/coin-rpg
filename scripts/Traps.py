@@ -6,8 +6,10 @@ from scripts import GameExceptions
 from scripts.GameObjects import Object
 from scripts.Inventory import Cell
 
+
 class Trap(Object):
-    def __init__(self, icon_path: str, size: int = 10, effect: str = "damage", power: int = 10, cooldown_time: int = 2, active_objects: list = None):
+    def __init__(self, icon_path: str, size: int = 10, effect: str = "damage", power: int = 10, cooldown_time: int = 2,
+                 active_objects: list = None):
         super().__init__(size)
         self.effect = effect
         self.power = power
@@ -25,7 +27,7 @@ class Trap(Object):
             return
 
         rect = pygame.Rect(self.position.x, self.position.y, self.size / 3 * 1.4, self.size / 3)
-        pygame.draw.rect(screen, 'grey', rect)
+        pygame.draw.rect(screen, 'gray', rect)
         icon_size = (self.size, self.size)
         icon = pygame.transform.scale(self.icon, icon_size)
         screen.blit(icon, (self.position.x - 10, self.position.y - 8))
@@ -42,8 +44,6 @@ class Trap(Object):
 
                 # Update last activation time
                 self.last_activation_time = current_time
-
-
 
     def _die(self):
         self.alive = False

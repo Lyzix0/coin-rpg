@@ -4,7 +4,7 @@ from scripts.Sprites import *
 from scripts.Inventory import *
 from scripts.GameObjects import Entity, Form, Direction, Player
 from scripts.Weapons import Weapon
-from scripts.traps import Trap
+from scripts.Traps import Trap
 
 
 pygame.init()
@@ -106,17 +106,12 @@ while running:
             new_player.speed /= 2
             pygame.time.set_timer(pygame.USEREVENT + 1, 0)
 
-
-    # level1.draw_all_tiles(screen, 150, 30)
-    # idle_sprites.draw_sprite(screen, 0)
     new_player.move(screen, walls)
 
     if new_player.moving:
         new_player.set_sprites(run_sprites.sprites)
     else:
         new_player.set_sprites(idle_sprites.sprites)
-
-
 
     walls.draw_tiles(screen)
     level1.draw_tiles(screen)
@@ -142,7 +137,6 @@ while running:
     new_player.draw_health_bar(screen)
     inventory.draw_inventory()
     keys = pygame.key.get_pressed()
-
 
     if index != 100:
         inventory.use_by_index(index)
