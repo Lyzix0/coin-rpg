@@ -128,6 +128,10 @@ class Player(Entity, pygame.sprite.Sprite):
     def apply_healing(self, amount):
         self._health += amount
 
+    def apply_poison_effect(self, duration: int):
+        self.speed /= 2  # Reduce speed to half
+        self.poison_effect_end_time = pygame.time.get_ticks() + duration
+
     def can_move_left(self):
         return self.position.x + self.size + 10 > self.size
 
