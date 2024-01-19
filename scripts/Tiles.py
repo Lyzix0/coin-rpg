@@ -55,6 +55,8 @@ class TileImages:
 
 class TileMap:
     def __init__(self):
+        self.rows = 0
+        self.cols = 0
         self.tile_map_surface = None
         self.current_tile_map = []
         self.tile_size = 0
@@ -95,6 +97,8 @@ class TileMap:
         Returns:
             Список Pygame Surface, каждый из которых является отдельным спрайтом.
         """
+        self.cols = cols
+        self.rows = rows
         self.tile_size = tile_size
         spritesheet = load_image(path)
         new_width = self.tile_size / (spritesheet.get_width() / rows) * spritesheet.get_width()
