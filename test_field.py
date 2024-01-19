@@ -40,7 +40,8 @@ level1.add_tile(heal)
 
 healing_potion = HealingPotion(icon_path='images/health.png', size=30, healing_power=30)
 healing_potion.place((250, 250))
-
+healing_potion1 = HealingPotion(icon_path='images/health.png', size=30, healing_power=30)
+healing_potion1.place((230, 230))
 level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
     ["dirt", "dirt", "grass", "dirt", "grass", "grass"],
@@ -49,7 +50,7 @@ level1_map = [
 ]
 
 walls = TileMap()
-inventory = Inventory(screen)
+inventory = Inventory(screen, new_player)
 for i in range(6):
     for j in range(5):
         if i in [0, 5] or j in (0, 4):
@@ -62,7 +63,7 @@ for i in range(6):
             tile.set_x(i * level1.tile_size + 200)
             tile.set_y(j * level1.tile_size + 150)
             level1.add_tile(tile)
-
+index = 100
 while running:
     screen.fill(pygame.color.Color(36, 20, 25))
 
@@ -88,11 +89,35 @@ while running:
 
     healing_potion.handle_collision(inventory, new_player)
 
+    healing_potion1.draw(screen)
+
+    healing_potion1.handle_collision(inventory, new_player)
     if pygame.mouse.get_pressed()[0]:
         new_player.make_shoot()
 
     new_player.draw_health_bar(screen)
     inventory.draw_inventory()
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_1]:
+        index = 0
+    elif keys[pygame.K_2]:
+        index = 1
+    elif keys[pygame.K_3]:
+        index = 2
+    elif keys[pygame.K_4]:
+        index = 3
+    elif keys[pygame.K_5]:
+        index = 4
+    elif keys[pygame.K_6]:
+        index = 5
+    elif keys[pygame.K_7]:
+        index = 6
+    elif keys[pygame.K_8]:
+        index = 7
+    if index != 100:
+        inventory.use_by_index(index)
+        index = 100
     clock.tick(60)
     pygame.display.flip()
 
