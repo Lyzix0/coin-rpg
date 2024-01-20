@@ -1,14 +1,19 @@
 from __future__ import annotations
+
+import sqlite3
+
 import pygame
 from scripts.Base import load_image
 
 
 class Tile(pygame.sprite.Sprite):
-    def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0, row: int = 0, col: int = 0):
+    def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0, row: int = 0, col: int = 0,
+                 wall: bool = False):
         pygame.sprite.Sprite.__init__(self)
         self.image = surface
         self.col = col
         self.row = row
+        self.wall = wall
         self.rect = pygame.Rect(x, y, surface.get_width(), surface.get_height())
 
     def set_x(self, new_x):
@@ -71,9 +76,11 @@ class TileMap:
                 temp_x_offset += self.tile_size
             y_offset += self.tile_size
 
-    def draw_tiles(self, screen):
+    def draw_tiles(self, screen, glow_walls=False):
         for tile in self.current_tile_map:
             screen.blit(tile.image, tile.rect)
+            if glow_walls and tile.wall:
+                pygame.draw.rect(screen, color='green', rect=tile.rect, width=1)
 
     def get_tile(self, row, col):
         new_tile = Tile(self.tile_map_surface[row][col], row=row, col=col)
@@ -81,6 +88,20 @@ class TileMap:
 
     def add_tile(self, tile: Tile):
         self.current_tile_map.append(tile)
+
+    def load_level(self, level_name):
+        db = sqlite3.connect('levels.db')
+        cur = db.cursor()
+
+        tiles = cur.execute(f'SELECT * FROM {level_name}').fetchall()
+
+        for tile in tiles:
+            path = tile[0]
+            if path == self.path:
+                new_tile = self.get_tile(tile[1], tile[2])
+                new_tile.rect = pygame.Rect(tile[3], tile[4], tile[5], tile[6])
+                new_tile.wall = tile[8]
+                self.current_tile_map.append(new_tile)
 
     def load_tilemap(self, path, rows=1, cols=1, tile_size=32):
         """
@@ -119,8 +140,3 @@ class TileMap:
             sprites.append(temp)
 
         self.tile_map_surface = sprites
-
-
-
-
-

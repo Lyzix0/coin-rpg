@@ -144,7 +144,7 @@ class Player(Entity, pygame.sprite.Sprite):
     def can_move_down(self, screen_height):
         return self.position.y < screen_height - self.size
 
-    def move(self, screen, walls=None):
+    def move(self, screen, tilemaps:[TileMap]=[]):
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
 
@@ -162,20 +162,22 @@ class Player(Entity, pygame.sprite.Sprite):
         rect_after_move.y += dy
 
         collision_detected = False
-        if walls:
-            # Задаем значения смещения для каждой стороны (left, right, top, bottom)
-            offset_left = 12
-            offset_right = 12
-            offset_top = 12
-            offset_bottom = 36  # Уменьшаем это значение, если хотим уменьшить отклонение снизу
 
-            for wall in walls.current_tile_map:
-                if (rect_after_move.right > wall.rect.left + offset_left and
-                        rect_after_move.left < wall.rect.right - offset_right and
-                        rect_after_move.bottom > wall.rect.top and
-                        rect_after_move.top < wall.rect.bottom - offset_bottom):
-                    collision_detected = True
-                    break
+        # Задаем значения смещения для каждой стороны (left, right, top, bottom)
+        offset_left = 12
+        offset_right = 12
+        offset_top = 12
+        offset_bottom = 36  # Уменьшаем это значение, если хотим уменьшить отклонение снизу
+
+        walls = [tile for tilemap in tilemaps for tile in tilemap.current_tile_map if tile.wall]
+
+        for wall in walls:
+            if (rect_after_move.right > wall.rect.left + offset_left and
+                    rect_after_move.left < wall.rect.right - offset_right and
+                    rect_after_move.bottom > wall.rect.top and
+                    rect_after_move.top < wall.rect.bottom - offset_bottom):
+                collision_detected = True
+                break
 
         if not collision_detected:
             self.position.x += dx

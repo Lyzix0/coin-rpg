@@ -33,31 +33,6 @@ new_player.set_sprites(idle_sprites.sprites)
 level1 = TileMap()
 level1.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
 
-heal = level1.get_tile(9, 8)
-heal.set_x(300)
-heal.set_y(200)
-
-traps = []
-
-# Create traps and add them to the list
-trap1 = Trap(icon_path='images/trap12.png', size=30, effect='damage', power=15)
-trap1.place((250, 250))
-traps.append(trap1)
-
-# trap2 = Trap(icon_path='images/poison_trap.png', size=20, effect='poison', power=5)
-# trap2.place((200, 100))
-# traps.append(trap2)
-
-
-level1.add_tile(heal)
-speed_potion = SpeedPotion(icon_path='images/speedpo.png', size=25, speed=2)
-speed_potion.place((600, 600))
-
-healing_potion = HealingPotion(icon_path='images/health.png', size=30, healing_power=30)
-healing_potion.place((600, 600))
-
-healing_potion1 = HealingPotion(icon_path='images/health.png', size=30, healing_power=30)
-healing_potion1.place((600, 600))
 level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
     ["dirt", "dirt", "grass", "dirt", "grass", "grass"],
@@ -65,23 +40,14 @@ level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
 ]
 
-walls = TileMap()
 inventory = Inventory(screen, new_player)
-for i in range(6):
-    for j in range(5):
-        if i in [0, 5] or j in (0, 4):
-            tile = level1.get_tile(j, i)
-            tile.set_x(i * level1.tile_size + 200)
-            tile.set_y(j * level1.tile_size + 150)
-            walls.add_tile(tile)
-        else:
-            tile = level1.get_tile(j, i)
-            tile.set_x(i * level1.tile_size + 200)
-            tile.set_y(j * level1.tile_size + 150)
-            level1.add_tile(tile)
+
+level1.load_level('level1')
+
 index = 100
 while running:
     screen.fill(pygame.color.Color(36, 20, 25))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -106,31 +72,17 @@ while running:
             new_player.speed /= 2
             pygame.time.set_timer(pygame.USEREVENT + 1, 0)
 
-    new_player.move(screen, walls)
+    new_player.move(screen, tilemaps=[level1])
 
     if new_player.moving:
         new_player.set_sprites(run_sprites.sprites)
     else:
         new_player.set_sprites(idle_sprites.sprites)
 
-    walls.draw_tiles(screen)
     level1.draw_tiles(screen)
-    for trap in traps:
-        trap.draw(screen)
-        trap.handle_collision(inventory, new_player)
+
     new_player.draw(screen)
 
-    speed_potion.draw(screen)
-
-    speed_potion.handle_collision(inventory, new_player)
-
-    healing_potion.draw(screen)
-
-    healing_potion.handle_collision(inventory, new_player)
-
-    healing_potion1.draw(screen)
-
-    healing_potion1.handle_collision(inventory, new_player)
     if pygame.mouse.get_pressed()[0]:
         new_player.make_shoot()
 
