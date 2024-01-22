@@ -37,6 +37,7 @@ pygame.display.set_caption("Simple Map Editor")
 
 font = pygame.font.Font(None, 36)
 text_wall = font.render("Тип тайла: обычный", True, 'black')
+level_name = 'level2'
 tile_wall = False
 
 tile_images = TileImages()
@@ -96,7 +97,6 @@ while running:
                 tile_wall = not tile_wall
 
             if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                level_name = 'level1'
                 create_level(level_name)
 
                 db = sqlite3.connect("levels.db")

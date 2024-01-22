@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import pygame
 from scripts import GameExceptions
 from scripts.GameObjects import Object
+from scripts.Tiles import Tile
 
 
 class Cell:
@@ -10,7 +13,6 @@ class Cell:
 
 
 class Inventory:
-
     def __init__(self, screen, player):
         self.cells = []
         self.screen = screen
@@ -36,7 +38,7 @@ class Inventory:
     def use_by_index(self, index: int):
         if 0 <= index < len(self.cells):
             cell = self.cells[index]
-            if cell.name == "xdd" and self.player.health < 100:
+            if cell.name == "heal":
                 self.player.apply_healing(20)
                 self.cells.pop(index)
                 pygame.time.delay(200)
@@ -80,10 +82,13 @@ class SpeedPotion(Object):
 
 
 class HealingPotion(Object):
-    def __init__(self, icon_path: str, size: int = 10, healing_power: int = 20, active_objects: list = None):
+    def __init__(self, icon: str | Tile, size: int = 40, healing_power: int = 20, active_objects: list = None):
         super().__init__(size)
         self.healing_power = healing_power
-        self.icon = pygame.image.load(icon_path)
+        if type(icon) == 'str':
+            self.icon = pygame.image.load(icon)
+        else:
+            self.icon = icon.image
         self.alive = True
         self.active_objects = active_objects
 
@@ -92,15 +97,15 @@ class HealingPotion(Object):
             raise GameExceptions.NotPlacedException
         if not self.alive:
             return
-        rect = pygame.Rect(self.position.x, self.position.y, self.size / 3 * 1.4, self.size / 3)
-        pygame.draw.rect(screen, 'green', rect)
+        # rect = pygame.Rect(self.position.x, self.position.y, self.size / 3 * 1.4, self.size / 3)
+        # pygame.draw.rect(screen, 'green', rect)
         icon_size = (self.size, self.size)
         icon = pygame.transform.scale(self.icon, icon_size)
         screen.blit(icon, (self.position.x - 10, self.position.y - 10))
 
     def handle_collision(self, inventory, player):
         if self.alive and self.position.distance_to(player.position) < (self.size + player.size) / 2:
-            cell = Cell(self.icon, 'xdd')
+            cell = Cell(self.icon, 'heal')
             inventory.add_item(cell)
             self._die()
 

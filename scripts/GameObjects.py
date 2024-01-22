@@ -126,7 +126,7 @@ class Player(Entity, pygame.sprite.Sprite):
         self.rect = pygame.Rect(0, 0, 32, 32)
 
     def apply_healing(self, amount):
-        self._health += amount
+        self._health = min(self._health + amount, 100)
 
     def apply_poison_effect(self, duration: int):
         self.speed /= 2  # Reduce speed to half
@@ -144,7 +144,7 @@ class Player(Entity, pygame.sprite.Sprite):
     def can_move_down(self, screen_height):
         return self.position.y < screen_height - self.size
 
-    def move(self, screen, tilemaps:[TileMap]=[]):
+    def move(self, screen, tilemaps: [TileMap] = []):
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
 
@@ -163,26 +163,23 @@ class Player(Entity, pygame.sprite.Sprite):
 
         collision_detected = False
 
-        # Задаем значения смещения для каждой стороны (left, right, top, bottom)
-        offset_left = 12
-        offset_right = 12
-        offset_top = 12
-        offset_bottom = 36  # Уменьшаем это значение, если хотим уменьшить отклонение снизу
-
         walls = [tile for tilemap in tilemaps for tile in tilemap.current_tile_map if tile.wall]
 
         for wall in walls:
-            if (rect_after_move.right > wall.rect.left + offset_left and
-                    rect_after_move.left < wall.rect.right - offset_right and
+            if (rect_after_move.right > wall.rect.left and
+                    rect_after_move.left < wall.rect.right and
                     rect_after_move.bottom > wall.rect.top and
-                    rect_after_move.top < wall.rect.bottom - offset_bottom):
+                    rect_after_move.top < wall.rect.bottom):
                 collision_detected = True
                 break
 
         if not collision_detected:
             self.position.x += dx
             self.position.y += dy
-            self.facing_right = dx > 0
+            if dx > 0:
+                self.facing_right = True
+            elif dx < 0:
+                self.facing_right = False
 
         self.moving = dx != 0 or dy != 0
         self.rect = pygame.Rect(self.position.x, self.position.y, self.size, self.size)
@@ -200,8 +197,19 @@ class Player(Entity, pygame.sprite.Sprite):
         if bullet:
             self._bullets.append(bullet)
 
-    def draw(self, screen):
+    def draw(self, screen, draw_surface: bool = False):
+        self.rect.y += 30
+        self.rect.x += 8
+        self.rect.height -= 23
+        self.rect.width = 32
+
+        if draw_surface:
+            pygame.draw.rect(screen, 'green', self.rect, 2)
+
         now = pygame.time.get_ticks()
+
+        if not self.alive:
+            return
 
         if now - self._last_time_update > self.animation_delay:
             self._last_time_update = now
@@ -224,4 +232,3 @@ class Player(Entity, pygame.sprite.Sprite):
         self.sprites.clear()
         for sprite in sprites:
             self.sprites.append(sprite)
-

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import sqlite3
-
+import time
 import pygame
 from scripts.Base import load_image
+from scripts.Sprites import SpriteSheet
 
 
 class Tile(pygame.sprite.Sprite):
@@ -29,6 +30,46 @@ class Tile(pygame.sprite.Sprite):
     @property
     def y(self):
         return self.rect.y
+
+
+class Trap(Tile):
+    def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0, row: int = 0, col: int = 0,
+                 cooldown_time: int = 1):
+        super().__init__(surface, x, y, row, col)
+
+        self.duration = 1000
+        self.power = 10
+        self.alive = True
+        self.cooldown_time = cooldown_time
+        self.last_activation_time = 0
+        self.effect = 'damage'
+
+        self.last_image_change_time = 0
+        self.sprites = None
+        self.current_image_index = 0
+
+    def handle_collision(self, player):
+        current_time = time.time()
+
+        if self.alive and current_time - self.last_activation_time > self.cooldown_time:
+            if self.rect.colliderect(player.rect):
+                if self.effect == "damage":
+                    player.take_damage(self.power)
+                elif self.effect == "poison":
+                    player.apply_poison_effect(duration=self.duration)
+
+                self.last_activation_time = current_time
+
+    def change_image(self):
+        if not self.sprites:
+            return
+
+        current_time = time.time()
+
+        if current_time - self.last_image_change_time > 1:
+            self.current_image_index = (self.current_image_index + 1) % len(self.sprites.sprites)
+            self.image = self.sprites.sprites[self.current_image_index]
+            self.last_image_change_time = current_time
 
 
 class TileImages:
@@ -78,6 +119,8 @@ class TileMap:
 
     def draw_tiles(self, screen, glow_walls=False):
         for tile in self.current_tile_map:
+            if tile.__class__.__name__ == "Trap":
+                tile.change_image()
             screen.blit(tile.image, tile.rect)
             if glow_walls and tile.wall:
                 pygame.draw.rect(screen, color='green', rect=tile.rect, width=1)

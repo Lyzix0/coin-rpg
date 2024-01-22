@@ -1,10 +1,13 @@
 import sys
+
+import pygame
+
 from scripts.Tiles import *
 from scripts.Sprites import *
 from scripts.Inventory import *
 from scripts.GameObjects import Entity, Form, Direction, Player
 from scripts.Weapons import Weapon
-from scripts.Traps import Trap
+from scripts.Tiles import Trap
 
 
 pygame.init()
@@ -33,6 +36,10 @@ new_player.set_sprites(idle_sprites.sprites)
 level1 = TileMap()
 level1.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
 
+heal = level1.get_tile(9, 8)
+heal = HealingPotion(heal)
+heal.place((400, 350))
+
 level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
     ["dirt", "dirt", "grass", "dirt", "grass", "grass"],
@@ -43,6 +50,13 @@ level1_map = [
 inventory = Inventory(screen, new_player)
 
 level1.load_level('level1')
+
+trap_tilemap = TileMap()
+trap_tilemap.load_tilemap('images/peaks/peaks.png', rows=1, cols=1)
+
+trap = Trap(trap_tilemap.get_tile(0, 0).image, 250, 300)
+trap.sprites = SpriteSheet('images/peaks/peaks.png', 4, 32)
+trap_tilemap.add_tile(trap)
 
 index = 100
 while running:
@@ -81,18 +95,26 @@ while running:
 
     level1.draw_tiles(screen)
 
-    new_player.draw(screen)
+    heal.draw(screen)
+    heal.handle_collision(inventory, new_player)
+
+    trap_tilemap.draw_tiles(screen)
+    trap.handle_collision(new_player)
 
     if pygame.mouse.get_pressed()[0]:
         new_player.make_shoot()
 
     new_player.draw_health_bar(screen)
     inventory.draw_inventory()
+
     keys = pygame.key.get_pressed()
 
     if index != 100:
         inventory.use_by_index(index)
         index = 100
+
+    new_player.draw(screen, True)
+
     clock.tick(60)
     pygame.display.flip()
 
