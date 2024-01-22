@@ -6,7 +6,7 @@ from scripts.Base import Form, Direction, rotate
 from scripts.Weapons import Weapon
 from scripts.Sprites import *
 from scripts.Tiles import *
-
+import math
 last_shot = pygame.time.get_ticks()
 
 
@@ -232,3 +232,144 @@ class Player(Entity, pygame.sprite.Sprite):
         self.sprites.clear()
         for sprite in sprites:
             self.sprites.append(sprite)
+
+class Enemy(Entity, pygame.sprite.Sprite):
+    def __init__(self, size: int = 10, health: float | int = 50, speed: float | int = 2, animation_delay: int = 200):
+        super().__init__(size, health, speed)
+        self.animation_delay = animation_delay
+        self._last_time_update = 0
+        self.rect = pygame.Rect(0, 0, 32, 32)
+        self.sprites = []
+        self.sprite_number = 0
+        self.facing_right = True
+        self.moving = False
+        self.current_weapon = None
+        self._bullets = []
+        self.current_weapon = Weapon(10, 1, 10, 'images/bullet.png')
+
+    def set_sprites(self, sprites):
+        if self.sprites == sprites:
+            return
+        self.sprite_number = 0
+        self.sprites.clear()
+        for sprite in sprites:
+            self.sprites.append(sprite)
+
+    def update_animation(self):
+        now = pygame.time.get_ticks()
+        if now - self._last_time_update > self.animation_delay:
+            self._last_time_update = now
+            self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
+
+    def move_towards_player(self, player_position, min_distance=50):
+        dx = player_position.x - self.position.x
+        dy = player_position.y - self.position.y
+        distance = math.sqrt(dx**2 + dy**2)
+
+        if distance > min_distance:
+            if distance != 0:
+                dx /= distance
+                dy /= distance
+
+            self.position.x += dx * self.speed
+            self.position.y += dy * self.speed
+
+            if dx > 0:
+                self.facing_right = True
+            elif dx < 0:
+                self.facing_right = False
+
+    def make_shoot(self, player_position):
+        if not self.current_weapon:
+            return
+
+        bullet = self.current_weapon.shoot(self.position.copy(), player_position)
+        if bullet:
+            self._bullets.append(bullet)
+
+    def update_bullets(self):
+        for bullet in self._bullets:
+            bullet.update()
+
+    def draw_bullets(self, screen):
+        for bullet in self._bullets:
+            bullet.draw(screen)
+
+    def update(self, player_position):
+        self.update_animation()
+        self.move_towards_player(player_position)
+        self.update_bullets()
+
+    def draw(self, screen):
+        self.rect.y = self.position.y + 30
+        self.rect.x = self.position.x + 8
+        self.rect.height = self.size - 23
+        self.rect.width = 32
+
+        now = pygame.time.get_ticks()
+
+        if now - self._last_time_update > self.animation_delay:
+            self._last_time_update = now
+            self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
+
+        if not self.facing_right:
+            sprite = pygame.transform.flip(self.sprites[self.sprite_number], True, False)
+        else:
+            sprite = self.sprites[self.sprite_number]
+
+        screen.blit(sprite, self.position)
+
+        self.draw_bullets(screen)
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, position, direction, speed, damage, image_path):
+        super().__init__()
+        self.original_image = pygame.image.load(image_path)
+        #self.image = pygame.transform.scale(self.original_image, (8, 8))  # Adjust the size as needed
+        self.rect = self.original_image.get_rect(center=position)
+        self.position = pygame.Vector2(position)
+        self.direction = direction
+        self.speed = speed
+        self.damage = damage
+        self.img = pygame.image.load("images/1x1.png")
+
+
+    def update(self):
+        self.position += self.direction * self.speed
+        self.rect.center = self.position
+        self.rotate_towards_direction()
+
+    def rotate_towards_direction(self):
+        angle = -math.degrees(math.atan2(self.direction.y, self.direction.x))
+        self.image = pygame.transform.rotate(self.original_image, angle)
+        self.img = pygame.transform.scale(self.image, (15, 15))
+        self.rect = self.img.get_rect(center=self.rect.center)
+
+    def draw(self, screen):
+        screen.blit(self.img, self.rect)
+
+
+class Weapon:
+    def __init__(self, damage: int, fire_rate: int, bullet_speed: int, bullet_image_path: str):
+        self.damage = damage
+        self.fire_rate = fire_rate
+        self.bullet_speed = bullet_speed
+        self.bullet_imag = pygame.image.load(bullet_image_path)
+        self.bullet_image = pygame.transform.scale(self.bullet_imag,(8,8))
+        self.last_shot_time = 0
+
+    def shoot(self, start_position: pygame.Vector2, target_position: pygame.Vector2):
+        now = pygame.time.get_ticks()
+
+        if now - self.last_shot_time > 1000 / self.fire_rate:
+            self.last_shot_time = now
+
+            direction = target_position - start_position
+            direction.normalize()
+
+            bullet = Bullet(start_position, direction, self.bullet_speed/50, self.damage, 'images/bullet.png')
+
+            return bullet
+        return None
+
+
