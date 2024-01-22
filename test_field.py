@@ -54,7 +54,7 @@ level1.load_level('level1')
 trap_tilemap = TileMap()
 trap_tilemap.load_tilemap('images/peaks/peaks.png', rows=1, cols=1)
 
-trap = Trap(trap_tilemap.get_tile(0, 0).image, 250, 300)
+trap = Trap(trap_tilemap.get_tile(0, 0).image, 250, 300, sprites_damage=[True, True, False, False])
 trap.sprites = SpriteSheet('images/peaks/peaks.png', 4, 32)
 trap_tilemap.add_tile(trap)
 

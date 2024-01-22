@@ -42,8 +42,8 @@ tile_wall = False
 
 tile_images = TileImages()
 tile_images.load_tile_images({
-    "grass": "images/grass.png",
-    "water": "images/dirt.jpg",
+    "grass": "images/tilesets/grass.png",
+    "water": "images/tilesets/dirt.jpg",
 })
 
 tile_size = 40

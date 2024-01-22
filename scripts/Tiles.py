@@ -34,12 +34,16 @@ class Tile(pygame.sprite.Sprite):
 
 class Trap(Tile):
     def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0, row: int = 0, col: int = 0,
-                 cooldown_time: int = 1):
+                 cooldown_time: int = 1, sprites_damage=None):
         super().__init__(surface, x, y, row, col)
+
+        if sprites_damage is None:
+            sprites_damage = [True] * 10
+
+        self.sprites_damage = sprites_damage
 
         self.duration = 1000
         self.power = 10
-        self.alive = True
         self.cooldown_time = cooldown_time
         self.last_activation_time = 0
         self.effect = 'damage'
@@ -51,7 +55,8 @@ class Trap(Tile):
     def handle_collision(self, player):
         current_time = time.time()
 
-        if self.alive and current_time - self.last_activation_time > self.cooldown_time:
+        if (self.alive and current_time - self.last_activation_time > self.cooldown_time
+                and self.sprites_damage[self.current_image_index]):
             if self.rect.colliderect(player.rect):
                 if self.effect == "damage":
                     player.take_damage(self.power)
