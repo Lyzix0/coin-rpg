@@ -1,7 +1,4 @@
 import sys
-
-import pygame
-
 from scripts.Tiles import *
 from scripts.Sprites import *
 from scripts.Inventory import *
@@ -40,6 +37,14 @@ heal = level1.get_tile(9, 8)
 heal = HealingPotion(heal)
 heal.place((400, 350))
 
+heal2 = level1.get_tile(9, 8)
+heal2 = HealingPotion(heal2)
+heal2.place((340, 330))
+
+heal3 = level1.get_tile(8, 7)
+heal3 = SpeedPotion(heal3)
+heal3.place((240, 260))
+
 level1_map = [
     ["grass", "dirt", "grass", "grass", "grass", "grass"],
     ["dirt", "dirt", "grass", "dirt", "grass", "grass"],
@@ -49,7 +54,7 @@ level1_map = [
 
 inventory = Inventory(screen, new_player)
 
-level1.load_level('level2')
+level1.load_level('level1')
 
 trap_tilemap = TileMap()
 trap_tilemap.load_tilemap('images/peaks/peaks.png', rows=1, cols=1)
@@ -57,6 +62,8 @@ trap_tilemap.load_tilemap('images/peaks/peaks.png', rows=1, cols=1)
 trap = Trap(trap_tilemap.get_tile(0, 0).image, 250, 300, sprites_damage=[True, True, False, False])
 trap.sprites = SpriteSheet('images/peaks/peaks.png', 4, 32)
 trap_tilemap.add_tile(trap)
+
+heals = [heal, heal2, heal3]
 
 index = 100
 while running:
@@ -95,8 +102,9 @@ while running:
 
     level1.draw_tiles(screen)
 
-    heal.draw(screen)
-    heal.handle_collision(inventory, new_player)
+    for heal in heals:
+        heal.draw(screen)
+        heal.handle_collision(inventory, new_player)
 
     trap_tilemap.draw_tiles(screen)
     trap.handle_collision(new_player)

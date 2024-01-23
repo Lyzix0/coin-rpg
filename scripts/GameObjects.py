@@ -144,7 +144,10 @@ class Player(Entity, pygame.sprite.Sprite):
     def can_move_down(self, screen_height):
         return self.position.y < screen_height - self.size
 
-    def move(self, screen, tilemaps: [TileMap] = []):
+    def move(self, screen, tilemaps=None):
+        if tilemaps is None:
+            tilemaps = []
+
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
 
@@ -232,3 +235,4 @@ class Player(Entity, pygame.sprite.Sprite):
         self.sprites.clear()
         for sprite in sprites:
             self.sprites.append(sprite)
+
