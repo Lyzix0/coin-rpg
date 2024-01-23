@@ -49,7 +49,7 @@ level1_map = [
 
 inventory = Inventory(screen, new_player)
 
-level1.load_level('level1')
+level1.load_level('level2')
 
 trap_tilemap = TileMap()
 trap_tilemap.load_tilemap('images/peaks/peaks.png', rows=1, cols=1)
