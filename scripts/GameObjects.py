@@ -1,8 +1,8 @@
 from __future__ import annotations
-
+import pygame.font
 import math
 import random
-
+import os
 import pygame
 import scripts.GameExceptions as GameExceptions
 from scripts.Base import Form, Direction, rotate
@@ -381,3 +381,56 @@ class EnemyWeapon:
 
             return bullet
         return None
+
+
+class ScoreCounter:
+    def __init__(self):
+        self.score = 0
+        self.font = pygame.font.Font("images/font/Pixel Emulator.otf", 20)  # Replace "pixel_font.ttf" with your pixel font file
+        self.text_color = (255, 215, 0)  # Golden color
+
+    def increase_score(self, amount):
+        self.score += amount
+
+    def get_score(self):
+        return self.score
+
+    def draw_score(self, screen):
+        text = self.font.render(f"Coins:{self.score}", True, self.text_color)
+        screen.blit(text, (10, 10))  # Adjust the position as needed
+
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, position: pygame.Vector2, score_counter: ScoreCounter, all_sprites: pygame.sprite.Group, animation_delay: int = 200):
+        super().__init__()
+        self.position = position
+        self.animation_delay = animation_delay
+        self.sprites = self.load_sprites()  # Загружаем изображения для анимации
+        self.sprite_number = 0
+        self.rect = pygame.Rect(self.position.x, self.position.y, 32, 32)
+        self._last_time_update = 0
+        self.score_counter = score_counter
+        self.all_sprites = all_sprites
+    def load_sprites(self):
+        sprite_folder = "images/coin_animation"  # Папка с изображениями для анимации
+        sprite_files = [f for f in os.listdir(sprite_folder) if f.endswith('.png')]
+        sprite_files.sort()
+        sprites = [pygame.image.load(os.path.join(sprite_folder, f)) for f in sprite_files]
+        return sprites
+
+    def update_animation(self):
+        now = pygame.time.get_ticks()
+        if now - self._last_time_update > self.animation_delay:
+            self._last_time_update = now
+            self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
+
+    def draw(self, screen):
+        self.update_animation()
+        sprite = self.sprites[self.sprite_number]
+        screen.blit(sprite, self.position)
+
+    def check_collision(self, player_rect):
+        if self.rect.colliderect(player_rect):
+            self.score_counter.increase_score(1)
+            self.kill()
+            return True
+        return False

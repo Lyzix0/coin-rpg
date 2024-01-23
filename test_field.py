@@ -5,7 +5,7 @@ import pygame
 from scripts.Tiles import *
 from scripts.Sprites import *
 from scripts.Inventory import *
-from scripts.GameObjects import Entity, Form, Direction, Player, Enemy
+from scripts.GameObjects import Entity, Form, Direction, Player, Enemy, Coin, ScoreCounter
 from scripts.Weapons import Weapon
 from scripts.Tiles import Trap
 
@@ -13,9 +13,9 @@ from scripts.Tiles import Trap
 pygame.init()
 
 clock = pygame.time.Clock()
-
+all_sprites = pygame.sprite.Group()
 running = True
-
+all_sprites = pygame.sprite.Group()
 screen_width = 800
 screen_height = 600
 
@@ -64,10 +64,13 @@ enemy1 = Enemy(size=30, health=50, speed=2, animation_delay=200)
 enemy_sprites = SpriteSheet('images/sprite0_strip4.png', 4, 40)
 enemy1.set_sprites(enemy_sprites.sprites)
 enemy1.place((400, 100))
-
+coins = []
 enemies_list.append(enemy1)
-
+score_counter = ScoreCounter()
 index = 100
+coin_position = pygame.Vector2(400, 400)
+coin = Coin(coin_position, score_counter, all_sprites)
+coins.append(coin)
 while running:
     screen.fill(pygame.color.Color(36, 20, 25))
 
@@ -130,7 +133,12 @@ while running:
         index = 100
 
     new_player.draw(screen, True)
-
+    score_counter.draw_score(screen)
+    for i in coins:
+        i.draw(screen)
+        if i.check_collision(new_player.rect):
+            print("Coin collected!")
+            coins.remove(i)
     clock.tick(60)
     pygame.display.flip()
 
