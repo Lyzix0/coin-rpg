@@ -17,6 +17,7 @@ class Tile(pygame.sprite.Sprite):
         self.wall = wall
         self.rect = pygame.Rect(x, y, surface.get_width(), surface.get_height())
 
+
     def set_x(self, new_x):
         self.rect.x = new_x
 

@@ -59,6 +59,7 @@ running = True
 current_tile_row = 0
 current_tile_col = 0
 current_tile = tile_map.get_tile(current_tile_row, current_tile_col)
+rotated = False
 
 while running:
     for event in pygame.event.get():
@@ -96,6 +97,9 @@ while running:
             if event.key == pygame.K_e:
                 tile_wall = not tile_wall
 
+            if event.key == pygame.K_r:
+                rotated = not rotated
+
             if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
                 create_level(level_name)
 
@@ -111,7 +115,7 @@ while running:
 
                     query = f'INSERT INTO {level_name} (image_path, row, col, x, y, width, height, reversed, wall)' \
                             f' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-                    values = (path, row, col, x, y, width, height, False, tile.wall)
+                    values = (path, row, col, x, y, width, height, rotated, tile.wall)
 
                     cursor.execute(query, values)
                     db.commit()
@@ -121,7 +125,12 @@ while running:
     screen.fill((255, 255, 255))
     tile_map.draw_tiles(screen, glow_walls=True)
 
-    screen.blit(current_tile.image, pygame.mouse.get_pos())
+    rotated_tile_image = current_tile.image.copy()
+    if rotated:
+        rotated_tile_image = pygame.transform.flip(rotated_tile_image, True, False)
+
+    screen.blit(rotated_tile_image, pygame.mouse.get_pos())
+
     if tile_wall:
         text_wall = font.render("Тип тайла: стена", True, 'black')
     else:

@@ -5,13 +5,13 @@ import pygame
 from scripts.Tiles import *
 from scripts.Sprites import *
 from scripts.Inventory import *
-from scripts.GameObjects import Entity, Form, Direction, Player, Enemy
+from scripts.GameObjects import Entity, Form, Direction, Player
 from scripts.Weapons import Weapon
 from scripts.Tiles import Trap
 
 
 pygame.init()
-enemies_list = []
+
 clock = pygame.time.Clock()
 
 running = True
@@ -57,11 +57,7 @@ trap_tilemap.load_tilemap('images/peaks/peaks.png', rows=1, cols=1)
 trap = Trap(trap_tilemap.get_tile(0, 0).image, 250, 300, sprites_damage=[True, True, False, False])
 trap.sprites = SpriteSheet('images/peaks/peaks.png', 4, 32)
 trap_tilemap.add_tile(trap)
-enemy1 = Enemy(size=30, health=50, speed=2, animation_delay=200)
-enemy_sprites = SpriteSheet('images/sprite0_strip4.png', 4, 30)
-enemy1.set_sprites(enemy_sprites.sprites)
-enemy1.place((400, 100))
-enemies_list = [enemy1]
+
 index = 100
 while running:
     screen.fill(pygame.color.Color(36, 20, 25))
@@ -118,14 +114,7 @@ while running:
         index = 100
 
     new_player.draw(screen, True)
-    # Inside the game loop
-    player_position = new_player.position
 
-    # Update and draw the enemies
-    for enemy in enemies_list:
-        enemy.update(player_position)
-        enemy.make_shoot(player_position)
-        enemy.draw(screen)
     clock.tick(60)
     pygame.display.flip()
 
