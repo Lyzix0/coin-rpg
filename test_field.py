@@ -5,7 +5,7 @@ import pygame
 from scripts.Tiles import *
 from scripts.Sprites import *
 from scripts.Inventory import *
-from scripts.GameObjects import Entity, Form, Direction, Player
+from scripts.GameObjects import Entity, Form, Direction, Player, Enemy
 from scripts.Weapons import Weapon
 from scripts.Tiles import Trap
 
@@ -58,6 +58,15 @@ trap = Trap(trap_tilemap.get_tile(0, 0).image, 250, 300, sprites_damage=[True, T
 trap.sprites = SpriteSheet('images/peaks/peaks.png', 4, 32)
 trap_tilemap.add_tile(trap)
 
+enemies_list = []
+
+enemy1 = Enemy(size=30, health=50, speed=2, animation_delay=200)
+enemy_sprites = SpriteSheet('images/sprite0_strip4.png', 4, 40)
+enemy1.set_sprites(enemy_sprites.sprites)
+enemy1.place((400, 100))
+
+enemies_list.append(enemy1)
+
 index = 100
 while running:
     screen.fill(pygame.color.Color(36, 20, 25))
@@ -100,6 +109,13 @@ while running:
 
     trap_tilemap.draw_tiles(screen)
     trap.handle_collision(new_player)
+
+    player_position = new_player.position
+
+    for enemy in enemies_list:
+        enemy.update()
+        enemy.make_shoot(player_position)
+        enemy.draw(screen)
 
     if pygame.mouse.get_pressed()[0]:
         new_player.make_shoot()
