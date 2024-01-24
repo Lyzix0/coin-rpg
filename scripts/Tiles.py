@@ -9,13 +9,14 @@ from scripts.Sprites import SpriteSheet
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, surface: pygame.Surface, x: int | float = 0, y: int | float = 0, row: int = 0, col: int = 0,
-                 wall: bool = False):
+                 wall: bool = False, rotated: bool = False):
         pygame.sprite.Sprite.__init__(self)
         self.image = surface
         self.col = col
         self.row = row
         self.wall = wall
         self.rect = pygame.Rect(x, y, surface.get_width(), surface.get_height())
+        self.rotated = rotated
 
     def set_x(self, new_x):
         self.rect.x = new_x
@@ -30,6 +31,12 @@ class Tile(pygame.sprite.Sprite):
     @property
     def y(self):
         return self.rect.y
+
+    def rotate(self, set_rotate=True):
+        if self.rotated != set_rotate:
+            self.image = pygame.transform.flip(self.image, True, False)
+
+        self.rotated = set_rotate
 
 
 class Trap(Tile):
@@ -126,6 +133,7 @@ class TileMap:
         for tile in self.current_tile_map:
             if tile.__class__.__name__ == "Trap":
                 tile.change_image()
+
             screen.blit(tile.image, tile.rect)
             if glow_walls and tile.wall:
                 pygame.draw.rect(screen, color='green', rect=tile.rect, width=1)
@@ -137,11 +145,11 @@ class TileMap:
     def add_tile(self, tile: Tile):
         self.current_tile_map.append(tile)
 
-    def load_level(self, level_name):
-        db = sqlite3.connect('levels.db')
+    def load_level(self, level_path):
+        db = sqlite3.connect(level_path)
         cur = db.cursor()
 
-        tiles = cur.execute(f'SELECT * FROM {level_name}').fetchall()
+        tiles = cur.execute(f'SELECT * FROM tiles').fetchall()
 
         for tile in tiles:
             path = tile[0]
@@ -149,7 +157,20 @@ class TileMap:
                 new_tile = self.get_tile(tile[1], tile[2])
                 new_tile.rect = pygame.Rect(tile[3], tile[4], tile[5], tile[6])
                 new_tile.wall = tile[8]
+                if tile[7]:
+                    new_tile.rotate(True)
+
                 self.current_tile_map.append(new_tile)
+
+        traps = cur.execute('SELECT * FROM traps').fetchall()
+        for trap in traps:
+            path = trap[0]
+            sprites_damage = [True if a == 'True' else False for a in trap[6].split(' ')]
+            new_tile = Trap(surface=pygame.image.load(path), sprites_damage=sprites_damage)
+            new_tile.sprites = SpriteSheet(path, trap[1], trap[4])
+            new_tile.rect = pygame.Rect(trap[2], trap[3], trap[4], trap[5])
+
+            self.current_tile_map.append(new_tile)
 
     def load_tilemap(self, path, rows=1, cols=1, tile_size=32):
         """

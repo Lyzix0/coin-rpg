@@ -45,13 +45,11 @@ class Inventory:
             if cell.name == "heal":
                 self.player.apply_healing(20)
                 self.cells[index] = None
-                pygame.time.delay(200)
 
             if cell.name == "speed":
                 self.player.speed *= 1.3
                 self.cells[index] = None
                 pygame.time.set_timer(pygame.USEREVENT + 1, 20000)
-                pygame.time.delay(200)
 
 
 class SpeedPotion(Object):

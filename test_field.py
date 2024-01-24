@@ -49,28 +49,26 @@ level1_map = [
 
 inventory = Inventory(screen, new_player)
 
-level1.load_level('level1')
-
-trap_tilemap = TileMap()
-trap_tilemap.load_tilemap('images/peaks/peaks.png', rows=1, cols=1)
-
-trap = Trap(trap_tilemap.get_tile(0, 0).image, 250, 300, sprites_damage=[True, True, False, False])
-trap.sprites = SpriteSheet('images/peaks/peaks.png', 4, 32)
-trap_tilemap.add_tile(trap)
+level1.load_level('all_levels/level1.db')
 
 enemies_list = []
 
 enemy1 = Enemy(size=30, health=50, speed=2, animation_delay=200)
-enemy_sprites = SpriteSheet('images/sprite0_strip4.png', 4, 40)
+enemy_sprites = SpriteSheet('images/enemy.png', 4, 40)
 enemy1.set_sprites(enemy_sprites.sprites)
-enemy1.place((400, 100))
-coins = []
+enemy1.place((400, 250))
 enemies_list.append(enemy1)
 score_counter = ScoreCounter()
 index = 100
-coin_position = pygame.Vector2(400, 400)
+
+coins = []
+coin_position = pygame.Vector2(500, 250)
 coin = Coin(coin_position, score_counter, all_sprites)
 coins.append(coin)
+
+walls = [tile for tile in level1.current_tile_map if tile.wall]
+traps = [trap for trap in level1.current_tile_map if isinstance(trap, Trap)]
+
 while running:
     screen.fill(pygame.color.Color(36, 20, 25))
 
@@ -98,8 +96,6 @@ while running:
             new_player.speed /= 2
             pygame.time.set_timer(pygame.USEREVENT + 1, 0)
 
-    new_player.move(screen, tilemaps=[level1])
-
     if new_player.moving:
         new_player.set_sprites(run_sprites.sprites)
     else:
@@ -110,15 +106,10 @@ while running:
     heal.draw(screen)
     heal.handle_collision(inventory, new_player)
 
-    trap_tilemap.draw_tiles(screen)
-    trap.handle_collision(new_player)
-
     player_position = new_player.position
 
     for enemy in enemies_list:
-        enemy.update()
-        enemy.make_shoot(player_position)
-        enemy.draw(screen)
+        enemy.update(screen, walls=walls, player_bullets=new_player.bullets, player_position=player_position)
 
     if pygame.mouse.get_pressed()[0]:
         new_player.make_shoot()
@@ -132,7 +123,12 @@ while running:
         inventory.use_by_index(index)
         index = 100
 
-    new_player.draw(screen, True)
+    for trap in traps:
+        trap.handle_collision(new_player)
+
+    new_player.update(screen, draw_surface=False, walls=walls, tilemaps=[level1],
+                      all_enemy_bullets=[enemy.bullets for enemy in enemies_list])
+
     score_counter.draw_score(screen)
     for i in coins:
         i.draw(screen)

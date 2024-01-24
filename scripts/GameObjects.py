@@ -6,7 +6,7 @@ import os
 import pygame
 import scripts.GameExceptions as GameExceptions
 from scripts.Base import Form, Direction, rotate
-from scripts.Weapons import Weapon
+from scripts.Weapons import Weapon, EnemyWeapon, EnemyBullet, PlayerBullet
 from scripts.Sprites import *
 from scripts.Tiles import *
 
@@ -58,6 +58,7 @@ class Entity(Object):
         self._health = health
         self.speed = speed
         self.alive = True
+        self._damage_timer = 0
 
     def draw(self, screen):
         """
@@ -98,6 +99,8 @@ class Entity(Object):
         """
         if self.alive:
             self._health -= damage
+            self._damage_timer = 500
+
             if self._health <= 0:
                 self._die()
 
@@ -147,7 +150,10 @@ class Player(Entity, pygame.sprite.Sprite):
     def can_move_down(self, screen_height):
         return self.position.y < screen_height - self.size
 
-    def move(self, screen, tilemaps: [TileMap] = []):
+    def move(self, screen, tilemaps=None):
+        if tilemaps is None:
+            tilemaps = []
+
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
 
@@ -196,11 +202,14 @@ class Player(Entity, pygame.sprite.Sprite):
         if not self.current_weapon:
             return
 
-        bullet = self.current_weapon.shoot(self.position.copy())
+        bullet = self.current_weapon.shoot(pygame.Vector2(*self.rect.center))
         if bullet:
             self._bullets.append(bullet)
 
-    def draw(self, screen, draw_surface: bool = False):
+    def draw(self, screen, draw_surface: bool = False, walls=None):
+        if walls is None:
+            walls = []
+
         self.rect.y += 30
         self.rect.x += 8
         self.rect.height -= 23
@@ -226,7 +235,7 @@ class Player(Entity, pygame.sprite.Sprite):
         screen.blit(sprite, self.position)
 
         for bullet in self._bullets:
-            bullet.draw(screen)
+            bullet.update(screen, walls)
 
     def set_sprites(self, sprites):
         if self.sprites == sprites:
@@ -235,6 +244,25 @@ class Player(Entity, pygame.sprite.Sprite):
         self.sprites.clear()
         for sprite in sprites:
             self.sprites.append(sprite)
+
+    def update(self, screen, draw_surface: bool = False, walls=None, tilemaps=None,
+               all_enemy_bullets: [[EnemyBullet]] = None):
+        if all_enemy_bullets is None:
+            all_enemy_bullets = []
+
+        for enemy_bullets in all_enemy_bullets:
+            for bullet in enemy_bullets:
+                if bullet.rect.colliderect(self.rect) and bullet.can_damage:
+                    self.take_damage(10)
+                    bullet.can_damage = False
+
+        if self.alive:
+            self.move(screen, tilemaps)
+            self.draw(screen, draw_surface, walls)
+
+    @property
+    def bullets(self):
+        return self._bullets
 
 
 class Enemy(Entity, pygame.sprite.Sprite):
@@ -249,7 +277,7 @@ class Enemy(Entity, pygame.sprite.Sprite):
         self.moving = False
         self.current_weapon = None
         self._bullets = []
-        self.current_weapon = EnemyWeapon(10, 1, 10, 'images/bullet.png')
+        self.current_weapon = EnemyWeapon(10, 0.5, 1, 'images/enemy_bullet.png')
         self.direction = None
 
     def set_sprites(self, sprites):
@@ -266,7 +294,12 @@ class Enemy(Entity, pygame.sprite.Sprite):
             self._last_time_update = now
             self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
 
-    def move_randomly(self):
+    def move_randomly(self, walls=None):
+        collision_detected = False
+
+        if walls is None:
+            walls = []
+
         now = pygame.time.get_ticks()
 
         if now % 600 < 450:
@@ -279,37 +312,60 @@ class Enemy(Entity, pygame.sprite.Sprite):
             if self.direction in ['up', 'down']:
                 movement_speed *= 0.7
 
+            new_position = self.position.copy()
+
             if self.direction == 'up':
-                self.position.y -= movement_speed
+                new_position.y -= movement_speed
             elif self.direction == 'down':
-                self.position.y += movement_speed
+                new_position.y += movement_speed
             elif self.direction == 'left':
-                self.position.x -= movement_speed
+                new_position.x -= movement_speed
                 self.facing_right = False
             elif self.direction == 'right':
-                self.position.x += movement_speed
+                new_position.x += movement_speed
                 self.facing_right = True
+
+            for wall in walls:
+                if wall.rect.colliderect(pygame.Rect(*new_position, self.size, self.size)):
+                    collision_detected = True
+                    break
+
+            if not collision_detected:
+                self.position.x = new_position.x
+                self.position.y = new_position.y
 
     def make_shoot(self, player_position):
         if not self.current_weapon:
             return
 
-        bullet = self.current_weapon.shoot(self.position.copy(), player_position)
+        bullet = self.current_weapon.shoot(self.position.copy(),
+                                           pygame.Vector2(player_position.x + random.randint(1, 30),
+                                                          player_position.y + random.randint(10, 40)))
         if bullet:
             self._bullets.append(bullet)
 
-    def update_bullets(self):
+    def update_bullets(self, screen, walls=None):
         for bullet in self._bullets:
-            bullet.update()
+            bullet.update(screen, walls)
 
-    def draw_bullets(self, screen):
-        for bullet in self._bullets:
-            bullet.draw(screen)
+    def update(self, screen, walls=None, player_bullets: [PlayerBullet] = None, player_position=None):
+        if player_bullets is None:
+            player_bullets = []
 
-    def update(self):
-        self.update_animation()
-        self.move_randomly()
-        self.update_bullets()
+        for bullet in player_bullets:
+            if self.rect.colliderect(bullet.rect) and bullet.can_damage:
+                self.take_damage(10)
+                bullet.can_damage = False
+                print(self.health)
+
+        if self.alive:
+            self.update_animation()
+            self.move_randomly(walls)
+            self.draw(screen)
+            if player_position:
+                self.make_shoot(player_position)
+
+            self.update_bullets(screen, walls)
 
     def draw(self, screen):
         self.rect.y = self.position.y + 30
@@ -330,64 +386,16 @@ class Enemy(Entity, pygame.sprite.Sprite):
 
         screen.blit(sprite, self.position)
 
-        self.draw_bullets(screen)
-
-
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, position, direction, speed, damage, image_path):
-        super().__init__()
-        self.original_image = pygame.image.load(image_path)
-        self.rect = self.original_image.get_rect(center=position)
-        self.position = pygame.Vector2(position)
-        self.direction = direction
-        self.speed = speed
-        self.damage = damage
-        self.img = pygame.image.load("images/1x1.png")
-
-    def update(self):
-        self.position += self.direction * self.speed
-        self.rect.center = self.position
-        self.rotate_towards_direction()
-
-    def rotate_towards_direction(self):
-        angle = -math.degrees(math.atan2(self.direction.y, self.direction.x))
-        self.image = pygame.transform.rotate(self.original_image, angle)
-        self.img = pygame.transform.scale(self.image, (15, 15))
-        self.rect = self.img.get_rect(center=self.rect.center)
-
-    def draw(self, screen):
-        screen.blit(self.img, self.rect)
-
-
-class EnemyWeapon:
-    def __init__(self, damage: int, fire_rate: int, bullet_speed: int, bullet_image_path: str):
-        self.damage = damage
-        self.fire_rate = fire_rate
-        self.bullet_speed = bullet_speed
-        self.bullet_imag = pygame.image.load(bullet_image_path)
-        self.bullet_image = pygame.transform.scale(self.bullet_imag, (8, 8))
-        self.last_shot_time = 0
-
-    def shoot(self, start_position: pygame.Vector2, target_position: pygame.Vector2):
-        now = pygame.time.get_ticks()
-
-        if now - self.last_shot_time > 1000 / self.fire_rate:
-            self.last_shot_time = now
-
-            direction = target_position - start_position
-            direction.normalize()
-
-            bullet = Bullet(start_position, direction, self.bullet_speed / 50, self.damage, 'images/bullet.png')
-
-            return bullet
-        return None
+    @property
+    def bullets(self):
+        return self._bullets
 
 
 class ScoreCounter:
     def __init__(self):
         self.score = 0
-        self.font = pygame.font.Font("images/font/Pixel Emulator.otf", 20)  # Replace "pixel_font.ttf" with your pixel font file
-        self.text_color = (255, 215, 0)  # Golden color
+        self.font = pygame.font.Font("images/font/Pixel Emulator.otf", 20)
+        self.text_color = (255, 215, 0)
 
     def increase_score(self, amount):
         self.score += amount
@@ -397,12 +405,15 @@ class ScoreCounter:
 
     def draw_score(self, screen):
         text = self.font.render(f"Coins:{self.score}", True, self.text_color)
-        screen.blit(text, (10, 10))  # Adjust the position as needed
+        screen.blit(text, (10, 10))
+
 
 class Coin(pygame.sprite.Sprite):
-    def __init__(self, position: pygame.Vector2, score_counter: ScoreCounter, all_sprites: pygame.sprite.Group, animation_delay: int = 200):
+    def __init__(self, position: pygame.Vector2, score_counter: ScoreCounter, all_sprites: pygame.sprite.Group,
+                 animation_delay: int = 200, sprite_size: int = 32):
         super().__init__()
         self.position = position
+        self.sprite_size = sprite_size
         self.animation_delay = animation_delay
         self.sprites = self.load_sprites()  # Загружаем изображения для анимации
         self.sprite_number = 0
@@ -410,11 +421,13 @@ class Coin(pygame.sprite.Sprite):
         self._last_time_update = 0
         self.score_counter = score_counter
         self.all_sprites = all_sprites
+
     def load_sprites(self):
         sprite_folder = "images/coin_animation"  # Папка с изображениями для анимации
         sprite_files = [f for f in os.listdir(sprite_folder) if f.endswith('.png')]
         sprite_files.sort()
-        sprites = [pygame.image.load(os.path.join(sprite_folder, f)) for f in sprite_files]
+        sprites = [pygame.transform.scale(pygame.image.load(os.path.join(sprite_folder, f)),
+                                          (self.sprite_size, self.sprite_size)) for f in sprite_files]
         return sprites
 
     def update_animation(self):

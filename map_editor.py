@@ -1,32 +1,105 @@
 import pygame
-from scripts.Tiles import TileImages, TileMap, Tile
+
+from scripts.Sprites import SpriteSheet
+from scripts.Tiles import TileImages, TileMap, Tile, Trap
 import sqlite3
 
 
-def create_level(level_name: str):
-    conn = sqlite3.connect('levels.db')
+def create_level(db_name: str):
+    conn = sqlite3.connect(db_name)
 
     cur = conn.cursor()
-    cur.execute(f'DROP TABLE IF EXISTS {level_name}')
 
-    table_creation_query = f'''
-    CREATE TABLE {level_name} (
-        image_path TEXT,
-        row INTEGER,
-        col INTEGER,
-        x INTEGER,
-        y INTEGER,
-        width INTEGER,
-        height INTEGER,
-        reversed BOOLEAN,
-        wall BOOLEAN
-    );
-    '''
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS tiles (
+            image_path TEXT,
+            row INTEGER,
+            col INTEGER,
+            x INTEGER,
+            y INTEGER,
+            width INTEGER,
+            height INTEGER,
+            rotated BOOLEAN,
+            wall BOOLEAN
+        );
+    ''')
 
-    cur.execute(table_creation_query)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS traps (
+            image_path TEXT,
+            cols INTEGER,
+            x INTEGER,
+            y INTEGER,
+            width INTEGER,
+            height INTEGER,
+            sprites_damage TEXT
+        );
+    ''')
+
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS enemies (
+            image_path TEXT,
+            cols INTEGER,
+            x INTEGER,
+            y INTEGER,
+            width INTEGER,
+            height INTEGER
+        );
+    ''')
 
     conn.commit()
     conn.close()
+
+
+def save_tiles(tile_map):
+    create_level(level_path)
+
+    db = sqlite3.connect(level_path)
+    cursor = db.cursor()
+
+    cursor.execute('DELETE FROM tiles')
+
+    for tile in tile_map.current_tile_map:
+        rect = tile.rect.copy()
+
+        path = tile_map.path
+        row = tile.row
+        col = tile.col
+        x, y, width, height = rect.x, rect.y, rect.width, rect.height
+
+        query = f'INSERT INTO tiles (image_path, row, col, x, y, width, height, rotated, wall)' \
+                f' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        values = (path, row, col, x, y, width, height, tile.rotated, tile.wall)
+
+        cursor.execute(query, values)
+        db.commit()
+
+
+def save_traps(tile_map, path='images/peaks/peaks.png', sprites_damage: [bool] = None):
+    if sprites_damage is None:
+        sprites_damage = [True, True, False, False]
+
+    create_level(level_path)
+
+    db = sqlite3.connect(level_path)
+    cursor = db.cursor()
+
+    cursor.execute('DELETE FROM traps')
+    for tile in tile_map.current_tile_map:
+        if not isinstance(tile, Trap):
+            continue
+
+        rect = tile.rect.copy()
+
+        x, y, width, height = rect.x, rect.y, rect.width, rect.height
+        cols = len(tile.sprites.sprites)
+
+        query = f'INSERT INTO traps (image_path, cols, x, y, width, height, sprites_damage)' \
+                f' VALUES (?, ?, ?, ?, ?, ?, ?)'
+        values = (path, cols, x, y, width, height, " ".join(map(str, sprites_damage)))
+
+        cursor.execute(query, values)
+        db.commit()
 
 
 pygame.init()
@@ -37,7 +110,7 @@ pygame.display.set_caption("Simple Map Editor")
 
 font = pygame.font.Font(None, 36)
 text_wall = font.render("Тип тайла: обычный", True, 'black')
-level_name = 'level2'
+level_path = 'all_levels/level1.db'
 tile_wall = False
 
 tile_images = TileImages()
@@ -72,6 +145,8 @@ while running:
                 if 0 <= tile_x < map_width and 0 <= tile_y < map_height:
                     new_tile = tile_map.get_tile(current_tile_row, current_tile_col)
                     new_tile.rect = pygame.Rect(tile_x * tile_size, tile_y * tile_size, tile_size, tile_size)
+                    new_tile.rotate(rotated)
+
                     if tile_wall:
                         new_tile.wall = True
 
@@ -99,35 +174,35 @@ while running:
 
             if event.key == pygame.K_r:
                 rotated = not rotated
+                current_tile.rotate(rotated)
 
             if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                create_level(level_name)
-
-                db = sqlite3.connect("levels.db")
-                cursor = db.cursor()
-                for tile in tile_map.current_tile_map:
-                    rect = tile.rect.copy()
-
-                    path = tile_map.path
-                    row = tile.row
-                    col = tile.col
-                    x, y, width, height = rect.x, rect.y, rect.width, rect.height
-
-                    query = f'INSERT INTO {level_name} (image_path, row, col, x, y, width, height, reversed, wall)' \
-                            f' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-                    values = (path, row, col, x, y, width, height, rotated, tile.wall)
-
-                    cursor.execute(query, values)
-                    db.commit()
+                create_level(level_path)
+                save_tiles(tile_map)
+                save_traps(tile_map)
 
             current_tile = tile_map.get_tile(current_tile_row, current_tile_col)
+
+            if event.key == pygame.K_t:
+                mouse_pos = pygame.mouse.get_pos()
+                tile_x = mouse_pos[0] // tile_size
+                tile_y = mouse_pos[1] // tile_size
+                if 0 <= tile_x < map_width and 0 <= tile_y < map_height:
+                    new_tile = Trap(surface=pygame.image.load('images/peaks/peaks.png'))
+                    new_tile.sprites = SpriteSheet('images/peaks/peaks.png', 4, tile_size)
+
+                    new_tile.rect = pygame.Rect(tile_x * tile_size, tile_y * tile_size, tile_size, tile_size)
+                    new_tile.rotate(rotated)
+
+                    if tile_wall:
+                        new_tile.wall = True
+
+                    tile_map.add_tile(new_tile)
 
     screen.fill((255, 255, 255))
     tile_map.draw_tiles(screen, glow_walls=True)
 
-    rotated_tile_image = current_tile.image.copy()
-    if rotated:
-        rotated_tile_image = pygame.transform.flip(rotated_tile_image, True, False)
+    rotated_tile_image = pygame.transform.flip(current_tile.image, rotated, False)
 
     screen.blit(rotated_tile_image, pygame.mouse.get_pos())
 
