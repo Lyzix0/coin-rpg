@@ -12,7 +12,7 @@ Coin RPG — это изометрическая rpg-игра, в которой
 - Разгадать тайны навеянной тьмой и врагами локации.
 - Найти спрятанные секреты, которые помогут раскрыть полную картину событий.
 
-![image](https://github.com/Lyzix0/dumb-rpg/assets/123410376/394d49a2-9189-45b8-a79f-2d5247574925)
+![image](https://github.com/Lyzix0/coin-rpg/blob/main/images/game_screenshot2.jpg)
 
 # Готово
 
