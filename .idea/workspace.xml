@@ -4,17 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2f7b0a99-b2e9-4923-95d5-b0dd85498ad3" name="Changes" comment="enemy rework">
-      <change afterPath="$PROJECT_DIR$/images/enemy_bullet.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/sprite0_strip4.png" beforeDir="false" afterPath="$PROJECT_DIR$/images/enemy.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/levels.db" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/map_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/map_editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/GameObjects.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/GameObjects.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/Inventory.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/Inventory.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/Tiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/Tiles.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/Weapons.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/Weapons.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_field.py" beforeDir="false" afterPath="$PROJECT_DIR$/test_field.py" afterDir="false" />
+    <list default="true" id="2f7b0a99-b2e9-4923-95d5-b0dd85498ad3" name="Changes" comment="few features were added">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game_screenshot.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/images/game_screenshot.jpg" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,18 +33,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/phyton projects/dumb-rpg/map_editor.py&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/phyton projects/dumb-rpg/images/game_screenshot.jpg",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\phyton projects\dumb-rpg\images\player" />
@@ -244,7 +236,15 @@
       <option name="project" value="LOCAL" />
       <updated>1706032477066</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="few features were added">
+      <option name="closed" value="true" />
+      <created>1706130540773</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1706130540774</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -283,6 +283,7 @@
     <MESSAGE value="delete useless image" />
     <MESSAGE value="rotation x-axis" />
     <MESSAGE value="enemy rework" />
-    <option name="LAST_COMMIT_MESSAGE" value="enemy rework" />
+    <MESSAGE value="few features were added" />
+    <option name="LAST_COMMIT_MESSAGE" value="few features were added" />
   </component>
 </project>
