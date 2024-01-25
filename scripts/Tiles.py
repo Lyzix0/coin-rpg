@@ -4,6 +4,7 @@ import sqlite3
 import time
 import pygame
 from scripts.Base import load_image
+from scripts.GameObjects import Enemy
 from scripts.Sprites import SpriteSheet
 
 
@@ -116,6 +117,7 @@ class TileMap:
         self.tile_map_surface = None
         self.current_tile_map = []
         self.tile_size = 0
+        self.enemies = []
 
     def draw_all_tiles(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
         if self.tile_map_surface is None:
@@ -171,6 +173,19 @@ class TileMap:
             new_tile.rect = pygame.Rect(trap[2], trap[3], trap[4], trap[5])
 
             self.current_tile_map.append(new_tile)
+
+        enemies = cur.execute('SELECT * FROM enemies').fetchall()
+        for enemy in enemies:
+            if enemy[0] == 'enemy1':
+                path = 'images/enemies/enemy.png'
+            else:
+                path = 'images/enemies/enemy2.png'
+
+            cols = enemy[1]
+            new_enemy = Enemy(40)
+            new_enemy.set_sprites(SpriteSheet(path, cols, 40, 'white').sprites)
+            new_enemy.place((enemy[2], enemy[3]))
+            self.enemies.append(new_enemy)
 
     def load_tilemap(self, path, rows=1, cols=1, tile_size=32):
         """

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pygame
 from scripts import GameExceptions
-from scripts.GameObjects import Object
+from scripts.GameObjects import GameObject
 from scripts.Tiles import Tile
 
 
@@ -52,7 +52,7 @@ class Inventory:
                 pygame.time.set_timer(pygame.USEREVENT + 1, 20000)
 
 
-class SpeedPotion(Object):
+class SpeedPotion(GameObject):
     def __init__(self, icon: str | Tile, size: int = 40, speed: int = 20, active_objects: list = None):
         super().__init__(size)
         self.duration = 20
@@ -87,7 +87,7 @@ class SpeedPotion(Object):
             self.active_objects.remove(self)
 
 
-class HealingPotion(Object):
+class HealingPotion(GameObject):
     def __init__(self, icon: str | Tile, size: int = 40, healing_power: int = 20, active_objects: list = None):
         super().__init__(size)
         self.healing_power = healing_power

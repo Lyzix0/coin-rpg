@@ -1,7 +1,6 @@
 import pygame
-
 from scripts.Sprites import SpriteSheet
-from scripts.Tiles import TileImages, TileMap, Tile, Trap
+from scripts.Tiles import TileImages, TileMap, Tile, Trap, Enemy
 import sqlite3
 
 
@@ -102,6 +101,35 @@ def save_traps(tile_map, path='images/peaks/peaks.png', sprites_damage: [bool] =
         db.commit()
 
 
+def save_enemies():
+    create_level(level_path)
+
+    db = sqlite3.connect(level_path)
+    cursor = db.cursor()
+
+    cursor.execute('DELETE FROM enemies')
+
+    for current_enemy in enemies:
+        rect = current_enemy.rect.copy()
+
+        x, y, width, height = rect.x, rect.y, rect.width, rect.height
+
+        query = f'INSERT INTO enemies (image_path, cols, x, y, width, height)' \
+                f' VALUES (?, ?, ?, ?, ?, ?)'
+        values = (current_enemy.name, 4, x, y, width, height)
+
+        cursor.execute(query, values)
+        db.commit()
+
+
+def place_enemy(image_path: str, cols: int = 4, colorkey=None, enemy_name: str = 'enemy'):
+    mouse_position = pygame.mouse.get_pos()
+    new_enemy = Enemy(40, 100, name=enemy_name)
+    new_enemy.set_sprites(SpriteSheet(image_path, cols, 40, colorkey).sprites)
+    new_enemy.place(pygame.Vector2(mouse_position[0], mouse_position[1]))
+    enemies.append(new_enemy)
+
+
 pygame.init()
 
 screen_width, screen_height = 800, 600
@@ -127,6 +155,7 @@ tile_map.load_tilemap("images/tilesets/Dungeon_Tileset.png", rows=10, cols=10, t
 map_width, map_height = round(screen_width / tile_size), round(screen_height / tile_size)
 
 level_map = []
+enemies = []
 
 running = True
 current_tile_row = 0
@@ -159,15 +188,15 @@ while running:
                                                  if tile.x != tile_x * tile_size or tile.y != tile_y * tile_size]
 
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP or event.key == pygame.K_w:
-                current_tile_row = (current_tile_row - 1) % tile_map.rows
-            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                current_tile_row = (current_tile_row + 1) % tile_map.rows
-
-            if event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                current_tile_col = (current_tile_col - 1) % tile_map.cols
-            elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                current_tile_col = (current_tile_col + 1) % tile_map.cols
+            match event.key:
+                case pygame.K_w:
+                    current_tile_row = (current_tile_row - 1) % tile_map.rows
+                case pygame.K_s:
+                    current_tile_row = (current_tile_row + 1) % tile_map.rows
+                case pygame.K_a:
+                    current_tile_col = (current_tile_col - 1) % tile_map.cols
+                case pygame.K_d:
+                    current_tile_col = (current_tile_col + 1) % tile_map.cols
 
             if event.key == pygame.K_e:
                 tile_wall = not tile_wall
@@ -180,6 +209,7 @@ while running:
                 create_level(level_path)
                 save_tiles(tile_map)
                 save_traps(tile_map)
+                save_enemies()
 
             current_tile = tile_map.get_tile(current_tile_row, current_tile_col)
 
@@ -199,12 +229,20 @@ while running:
 
                     tile_map.add_tile(new_tile)
 
+            if event.key == pygame.K_1:
+                place_enemy('images/enemies/enemy.png', 4, 'white', enemy_name='enemy1')
+            elif event.key == pygame.K_2:
+                place_enemy('images/enemies/enemy2.png', 4, 'white', enemy_name='enemy2')
+
     screen.fill((255, 255, 255))
     tile_map.draw_tiles(screen, glow_walls=True)
 
     rotated_tile_image = pygame.transform.flip(current_tile.image, rotated, False)
 
     screen.blit(rotated_tile_image, pygame.mouse.get_pos())
+
+    for enemy in enemies:
+        enemy.draw(screen)
 
     if tile_wall:
         text_wall = font.render("Тип тайла: стена", True, 'black')

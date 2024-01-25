@@ -53,11 +53,6 @@ level1.load_level('all_levels/level1.db')
 
 enemies_list = []
 
-enemy1 = Enemy(size=30, health=50, speed=2, animation_delay=200)
-enemy_sprites = SpriteSheet('images/enemy.png', 4, 40)
-enemy1.set_sprites(enemy_sprites.sprites)
-enemy1.place((400, 250))
-enemies_list.append(enemy1)
 score_counter = ScoreCounter()
 index = 100
 
@@ -133,8 +128,11 @@ while running:
     for i in coins:
         i.draw(screen)
         if i.check_collision(new_player.rect):
-            print("Coin collected!")
             coins.remove(i)
+
+    for enemy in level1.enemies:
+        enemy.update(screen, walls, new_player.bullets, player_position)
+
     clock.tick(60)
     pygame.display.flip()
 

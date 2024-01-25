@@ -3,17 +3,15 @@ import pygame.font
 import math
 import random
 import os
-import pygame
 import scripts.GameExceptions as GameExceptions
 from scripts.Base import Form, Direction, rotate
 from scripts.Weapons import Weapon, EnemyWeapon, EnemyBullet, PlayerBullet
-from scripts.Sprites import *
 from scripts.Tiles import *
 
 last_shot = pygame.time.get_ticks()
 
 
-class Object:
+class GameObject:
     def __init__(self, size: int = 10):
         self._position = None
         self.size = size
@@ -52,7 +50,7 @@ class Object:
         pygame.draw.rect(screen, 'green', rect)
 
 
-class Entity(Object):
+class Entity(GameObject):
     def __init__(self, size: int = 10, health: float | int = 100, speed: float | int = 1):
         super().__init__(size)
         self._health = health
@@ -266,7 +264,7 @@ class Player(Entity, pygame.sprite.Sprite):
 
 
 class Enemy(Entity, pygame.sprite.Sprite):
-    def __init__(self, size: int = 10, health: float | int = 50, speed: float | int = 5, animation_delay: int = 200):
+    def __init__(self, size: int = 10, health: float | int = 50, speed: float | int = 5, animation_delay: int = 200, name: str = 'enemy'):
         super().__init__(size, health, speed)
         self.animation_delay = animation_delay
         self._last_time_update = 0
@@ -279,6 +277,8 @@ class Enemy(Entity, pygame.sprite.Sprite):
         self._bullets = []
         self.current_weapon = EnemyWeapon(10, 0.5, 1, 'images/enemy_bullet.png')
         self.direction = None
+        self.name = name
+        self._start_update_time = pygame.time.get_ticks() + random.randint(50, 1500)
 
     def set_sprites(self, sprites):
         if self.sprites == sprites:
@@ -356,12 +356,13 @@ class Enemy(Entity, pygame.sprite.Sprite):
             if self.rect.colliderect(bullet.rect) and bullet.can_damage:
                 self.take_damage(10)
                 bullet.can_damage = False
-                print(self.health)
 
         if self.alive:
             self.update_animation()
-            self.move_randomly(walls)
             self.draw(screen)
+            if pygame.time.get_ticks() < self._start_update_time:
+                return
+            self.move_randomly(walls)
             if player_position:
                 self.make_shoot(player_position)
 
