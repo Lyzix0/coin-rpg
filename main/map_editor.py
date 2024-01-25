@@ -1,4 +1,6 @@
 import pygame
+
+
 from scripts.Sprites import SpriteSheet
 from scripts.Tiles import TileImages, TileMap, Tile, Trap, Enemy
 import sqlite3
@@ -130,6 +132,7 @@ def place_enemy(image_path: str, cols: int = 4, colorkey=None, enemy_name: str =
     enemies.append(new_enemy)
 
 
+
 pygame.init()
 
 screen_width, screen_height = 800, 600
@@ -138,7 +141,7 @@ pygame.display.set_caption("Simple Map Editor")
 
 font = pygame.font.Font(None, 36)
 text_wall = font.render("Тип тайла: обычный", True, 'black')
-level_path = 'all_levels/level1.db'
+level_path = 'all_levels/level2.db'
 tile_wall = False
 
 tile_images = TileImages()

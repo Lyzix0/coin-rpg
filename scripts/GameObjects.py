@@ -4,9 +4,15 @@ import math
 import random
 import os
 import scripts.GameExceptions as GameExceptions
+
+
+
+from scripts.Tiles import *
 from scripts.Base import Form, Direction, rotate
 from scripts.Weapons import Weapon, EnemyWeapon, EnemyBullet, PlayerBullet
-from scripts.Tiles import *
+
+import os
+
 
 last_shot = pygame.time.get_ticks()
 
@@ -275,7 +281,7 @@ class Enemy(Entity, pygame.sprite.Sprite):
         self.moving = False
         self.current_weapon = None
         self._bullets = []
-        self.current_weapon = EnemyWeapon(10, 0.5, 1, 'images/enemy_bullet.png')
+        self.current_weapon = EnemyWeapon(10, 0.5, 1, '../main/images/enemy_bullet.png')
         self.direction = None
         self.name = name
         self._start_update_time = pygame.time.get_ticks() + random.randint(50, 1500)
@@ -368,6 +374,7 @@ class Enemy(Entity, pygame.sprite.Sprite):
 
             self.update_bullets(screen, walls)
 
+
     def draw(self, screen):
         self.rect.y = self.position.y + 30
         self.rect.x = self.position.x + 8
@@ -395,7 +402,7 @@ class Enemy(Entity, pygame.sprite.Sprite):
 class ScoreCounter:
     def __init__(self):
         self.score = 0
-        self.font = pygame.font.Font("images/font/Pixel Emulator.otf", 20)
+        self.font = pygame.font.Font("../main/images/font/Pixel Emulator.otf", 20)
         self.text_color = (255, 215, 0)
 
     def increase_score(self, amount):
@@ -448,3 +455,59 @@ class Coin(pygame.sprite.Sprite):
             self.kill()
             return True
         return False
+
+
+class Door(GameObject, pygame.sprite.Sprite):
+    def __init__(self, icon: str | Tile, size: int = 40, is_locked: bool = True, active_objects: list = None, all_sprites: list = None, enemies_list: list = None) :
+        super().__init__(size)
+        self.is_locked = is_locked
+        if type(icon) == 'str':
+            self.icon = pygame.image.load(icon)
+        else:
+            self.icon = icon.image
+        self.active_objects = active_objects
+        self.all_sprites = all_sprites
+        self.level_name = 2
+        self.enemies_list = enemies_list
+        self.active_objects = active_objects
+    def draw(self, screen: pygame.surface):
+        if not self.placed:
+            raise GameExceptions.NotPlacedException
+        icon_size = (self.size, self.size)
+        icon = pygame.transform.scale(self.icon, icon_size)
+        screen.blit(icon, (self.position.x - 10, self.position.y - 10))
+
+
+
+    def handle_collision(self, player, next_map, screen: pygame.surface):
+        n = True
+        all_enemies_alive = all(enemy.alive for enemy in self.enemies_list)
+
+        if (self.position.distance_to(player.position) < (self.size + player.size) / 2):
+            for _ in next_map.current_tile_map:
+                next_map.current_tile_map.remove(_)
+            next_map.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
+            try:
+                if os.path.exists(f'all_levels/level{self.level_name}.db'):
+                    next_map.load_level(f'all_levels/level{self.level_name}.db')
+
+                # Remove the door from the sprite group if applicable
+                if self.all_sprites is not None:
+                    self.all_sprites.remove(self)
+
+                # Set placed to False to indicate that the door is no longer in use
+                self.placed = (10000,10000)
+                # Dim the screen
+                dim_surface = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
+                dim_surface.fill((0, 0, 0, 128))  # 128 is the alpha value for transparency
+                screen.blit(dim_surface, (0, 0))
+                pygame.display.flip()
+
+                # Pause for a few seconds
+                # time.sleep(2)  # Adjust the sleep time as needed
+
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
+            # walls = [tile for tile in next_map.current_tile_map if tile.wall]
+            # traps = [trap for trap in next_map.current_tile_map if isinstance(trap, Trap)]

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 import sqlite3
 import time
 import pygame
@@ -177,9 +178,9 @@ class TileMap:
         enemies = cur.execute('SELECT * FROM enemies').fetchall()
         for enemy in enemies:
             if enemy[0] == 'enemy1':
-                path = 'images/enemies/enemy.png'
+                path = '../main/images/enemies/enemy.png'
             else:
-                path = 'images/enemies/enemy2.png'
+                path = '../main/images/enemies/enemy2.png'
 
             cols = enemy[1]
             new_enemy = Enemy(40)
@@ -210,6 +211,7 @@ class TileMap:
 
         spritesheet = pygame.transform.scale(spritesheet, (new_width, new_height))
 
+
         sprites = []
         for row in range(rows):
             temp = []
@@ -224,3 +226,5 @@ class TileMap:
             sprites.append(temp)
 
         self.tile_map_surface = sprites
+
+

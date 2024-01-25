@@ -119,7 +119,7 @@ class EnemyWeapon:
             direction.normalize()
 
             bullet = EnemyBullet(start_position, direction, self.bullet_speed / 50, self.damage,
-                                 'images/enemy_bullet.png')
+                                 '../main/images/enemy_bullet.png')
 
             return bullet
         return None
