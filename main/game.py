@@ -1,12 +1,13 @@
 import pygame, sys
 
-
 from scripts.Tiles import *
 from scripts.Sprites import *
 from scripts.Inventory import *
 from scripts.GameObjects import Entity, Form, Direction, Player, Enemy, Coin, ScoreCounter, Door
 from scripts.Weapons import Weapon
 from scripts.Tiles import Trap
+
+
 class Button():
     def __init__(self, image, pos, text_input, font, base_color, hovering_color):
         self.image = image
@@ -46,16 +47,11 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-
 BG = pygame.image.load("assets/Background.png")
 
 
 def get_font(size):
     return pygame.font.Font("assets/font.ttf", size)
-
-
-
-
 
 
 def options():
@@ -116,10 +112,9 @@ def main_menu():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
-                    pygame.init()         #КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ
+                    pygame.init()  # КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ КОД ИГРЫ ЗДЕСЬ
 
                     clock = pygame.time.Clock()
-                    all_sprites = pygame.sprite.Group()
                     running = True
                     all_sprites = pygame.sprite.Group()
                     screen_width = 800
@@ -141,26 +136,14 @@ def main_menu():
 
                     next_map = TileMap()
                     next_map.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
-                    door_img = next_map.get_tile(6, 7)
-                    door = Door(door_img, all_sprites=all_sprites, enemies_list=enemies_list)
-                    door.place((400,400))
 
                     heal = next_map.get_tile(9, 8)
                     heal = HealingPotion(heal)
                     heal.place((400, 350))
 
-                    level1_map = [
-                        ["grass", "dirt", "grass", "grass", "grass", "grass"],
-                        ["dirt", "dirt", "grass", "dirt", "grass", "grass"],
-                        ["grass", "grass", "dirt", "grass", "dirt", "grass"],
-                        ["grass", "dirt", "grass", "grass", "grass", "grass"],
-                    ]
-
                     inventory = Inventory(screen, new_player)
 
-                    next_map.load_level('all_levels/level1.db')
-
-
+                    next_map.load_level('all_levels/level2.db')
 
                     score_counter = ScoreCounter()
                     index = 100
@@ -211,7 +194,6 @@ def main_menu():
                         heal.handle_collision(inventory, new_player)
 
                         player_position = new_player.position
-                        door.draw(screen)
                         for enemy in enemies_list:
                             enemy.update(screen, walls=walls, player_bullets=new_player.bullets,
                                          player_position=player_position)
@@ -221,8 +203,6 @@ def main_menu():
 
                         new_player.draw_health_bar(screen)
                         inventory.draw_inventory()
-                        door.handle_collision(new_player, next_map, screen)
-                        keys = pygame.key.get_pressed()
 
                         if index != 100:
                             inventory.use_by_index(index)

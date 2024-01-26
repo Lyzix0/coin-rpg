@@ -183,7 +183,7 @@ class TileMap:
                 path = '../main/images/enemies/enemy2.png'
 
             cols = enemy[1]
-            new_enemy = Enemy(40)
+            new_enemy = Enemy(40, speed=2)
             new_enemy.set_sprites(SpriteSheet(path, cols, 40, 'white').sprites)
             new_enemy.place((enemy[2], enemy[3]))
             self.enemies.append(new_enemy)
