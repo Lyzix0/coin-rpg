@@ -20,17 +20,17 @@ class Inventory:
         self.player = player
         self.width = 500
         self.x = 150
-        self.y = 550
+        self.y = 650
         self.inventory_color = (255, 255, 255)
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def draw_inventory(self):
         pygame.draw.rect(self.screen, self.inventory_color, self.rect, 2)
         for _ in range(0, 500, 50):
-            pygame.draw.line(self.screen, (255, 255, 255), [150 + _, 550], [150 + _, 600], 3)
+            pygame.draw.line(self.screen, (255, 255, 255), [150 + _, 650], [150 + _, 700], 3)
         for i in range(min(len(self.cells), 10)):
             if self.cells[i]:
-                self.screen.blit(self.cells[i].image, (155 + i * 50, 555))
+                self.screen.blit(self.cells[i].image, (155 + i * 50, 655))
 
     def add_item(self, cell: Cell):
         cell.image = pygame.transform.scale(cell.image, (40, 40))

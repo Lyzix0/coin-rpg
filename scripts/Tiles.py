@@ -1,12 +1,10 @@
 from __future__ import annotations
-
-
 import sqlite3
 import time
 import pygame
 from scripts.Base import load_image
-from scripts.GameObjects import Enemy
 from scripts.Sprites import SpriteSheet
+from scripts.GameObjects import Player, Coin, Enemy
 
 
 class Tile(pygame.sprite.Sprite):
@@ -211,7 +209,6 @@ class TileMap:
 
         spritesheet = pygame.transform.scale(spritesheet, (new_width, new_height))
 
-
         sprites = []
         for row in range(rows):
             temp = []
@@ -226,5 +223,3 @@ class TileMap:
             sprites.append(temp)
 
         self.tile_map_surface = sprites
-
-

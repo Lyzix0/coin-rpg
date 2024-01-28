@@ -74,7 +74,7 @@ class EnemyBullet(pygame.sprite.Sprite):
         self.original_image = load_image(image_path, colorkey='white')
         self.rect = self.original_image.get_rect(center=position)
         self.position = pygame.Vector2(position)
-        self.direction = direction
+        self.direction = direction.normalize()
         self.speed = speed
         self.damage = damage
         self.img = self.original_image
@@ -85,9 +85,10 @@ class EnemyBullet(pygame.sprite.Sprite):
         if walls:
             for wall in walls:
                 if wall.rect.collidepoint(self.rect.center):
+                    self.can_damage = False
                     return
 
-        self.position += self.direction * self.speed
+        self.position += self.direction * self.speed * 35
         self.rect.center = self.position
         self.rotate_towards_direction()
         self._draw(screen)

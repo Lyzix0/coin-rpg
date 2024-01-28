@@ -1,18 +1,10 @@
 from __future__ import annotations
 import pygame.font
-import math
 import random
-import os
 import scripts.GameExceptions as GameExceptions
-
-
-
-from scripts.Tiles import *
 from scripts.Base import Form, Direction, rotate
 from scripts.Weapons import Weapon, EnemyWeapon, EnemyBullet, PlayerBullet
-
 import os
-
 
 last_shot = pygame.time.get_ticks()
 
@@ -254,15 +246,15 @@ class Player(Entity, pygame.sprite.Sprite):
         if all_enemy_bullets is None:
             all_enemy_bullets = []
 
-        for enemy_bullets in all_enemy_bullets:
-            for bullet in enemy_bullets:
-                if bullet.rect.colliderect(self.rect) and bullet.can_damage:
-                    self.take_damage(10)
-                    bullet.can_damage = False
-
         if self.alive:
             self.move(screen, tilemaps)
             self.draw(screen, draw_surface, walls)
+
+            for enemy_bullets in all_enemy_bullets:
+                for bullet in enemy_bullets:
+                    if bullet.rect.colliderect(self.rect) and bullet.can_damage:
+                        self.take_damage(10)
+                        bullet.can_damage = False
 
     @property
     def bullets(self):
@@ -270,7 +262,8 @@ class Player(Entity, pygame.sprite.Sprite):
 
 
 class Enemy(Entity, pygame.sprite.Sprite):
-    def __init__(self, size: int = 10, health: float | int = 50, speed: float | int = 5, animation_delay: int = 200, name: str = 'enemy'):
+    def __init__(self, size: int = 10, health: float | int = 50, speed: float | int = 5, animation_delay: int = 200,
+                 name: str = 'enemy'):
         super().__init__(size, health, speed)
         self.animation_delay = animation_delay
         self._last_time_update = 0
@@ -281,7 +274,7 @@ class Enemy(Entity, pygame.sprite.Sprite):
         self.moving = False
         self.current_weapon = None
         self._bullets = []
-        self.current_weapon = EnemyWeapon(10, 0.5, 1, '../main/images/enemy_bullet.png')
+        self.current_weapon = EnemyWeapon(10, random.random(), 1, '../main/images/enemy_bullet.png')
         self.direction = None
         self.name = name
         self._start_update_time = pygame.time.get_ticks() + random.randint(50, 1500)
@@ -340,13 +333,13 @@ class Enemy(Entity, pygame.sprite.Sprite):
                 self.position.x = new_position.x
                 self.position.y = new_position.y
 
-    def make_shoot(self, player_position):
-        if not self.current_weapon:
+    def make_shoot(self, player: Player):
+        if not self.current_weapon or not player.alive:
             return
 
         bullet = self.current_weapon.shoot(self.position.copy(),
-                                           pygame.Vector2(player_position.x + random.randint(1, 30),
-                                                          player_position.y + random.randint(10, 40)))
+                                           pygame.Vector2(player.position.x + random.randint(1, 30),
+                                                          player.position.y + random.randint(10, 40)))
         if bullet:
             self._bullets.append(bullet)
 
@@ -354,14 +347,9 @@ class Enemy(Entity, pygame.sprite.Sprite):
         for bullet in self._bullets:
             bullet.update(screen, walls)
 
-    def update(self, screen, walls=None, player_bullets: [PlayerBullet] = None, player_position=None):
+    def update(self, screen, walls=None, player_bullets: [PlayerBullet] = None, player: Player = None):
         if player_bullets is None:
             player_bullets = []
-
-        for bullet in player_bullets:
-            if self.rect.colliderect(bullet.rect) and bullet.can_damage:
-                self.take_damage(10)
-                bullet.can_damage = False
 
         if self.alive:
             self.update_animation()
@@ -369,11 +357,15 @@ class Enemy(Entity, pygame.sprite.Sprite):
             if pygame.time.get_ticks() < self._start_update_time:
                 return
             self.move_randomly(walls)
-            if player_position:
-                self.make_shoot(player_position)
+            if player:
+                self.make_shoot(player)
 
-            self.update_bullets(screen, walls)
+            for bullet in player_bullets:
+                if self.rect.colliderect(bullet.rect) and bullet.can_damage:
+                    self.take_damage(10)
+                    bullet.can_damage = False
 
+        self.update_bullets(screen, walls)
 
     def draw(self, screen):
         self.rect.y = self.position.y + 30
@@ -458,7 +450,8 @@ class Coin(pygame.sprite.Sprite):
 
 
 class Door(GameObject, pygame.sprite.Sprite):
-    def __init__(self, icon: str | Tile, size: int = 40, is_locked: bool = True, active_objects: list = None, all_sprites: list = None, enemies_list: list = None) :
+    def __init__(self, icon, size: int = 40, is_locked: bool = True, active_objects: list = None,
+                 all_sprites: list = None, enemies_list: list = None):
         super().__init__(size)
         self.is_locked = is_locked
         if type(icon) == 'str':
@@ -470,6 +463,7 @@ class Door(GameObject, pygame.sprite.Sprite):
         self.level_name = 2
         self.enemies_list = enemies_list
         self.active_objects = active_objects
+
     def draw(self, screen: pygame.surface):
         if not self.placed:
             raise GameExceptions.NotPlacedException
@@ -477,13 +471,8 @@ class Door(GameObject, pygame.sprite.Sprite):
         icon = pygame.transform.scale(self.icon, icon_size)
         screen.blit(icon, (self.position.x - 10, self.position.y - 10))
 
-
-
     def handle_collision(self, player, next_map, screen: pygame.surface):
-        n = True
-        all_enemies_alive = all(enemy.alive for enemy in self.enemies_list)
-
-        if (self.position.distance_to(player.position) < (self.size + player.size) / 2):
+        if self.position.distance_to(player.position) < (self.size + player.size) / 2:
             for _ in next_map.current_tile_map:
                 next_map.current_tile_map.remove(_)
             next_map.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
@@ -491,23 +480,14 @@ class Door(GameObject, pygame.sprite.Sprite):
                 if os.path.exists(f'all_levels/level{self.level_name}.db'):
                     next_map.load_level(f'all_levels/level{self.level_name}.db')
 
-                # Remove the door from the sprite group if applicable
                 if self.all_sprites is not None:
                     self.all_sprites.remove(self)
 
-                # Set placed to False to indicate that the door is no longer in use
-                self.placed = (10000,10000)
-                # Dim the screen
+                self.placed = (10000, 10000)
                 dim_surface = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
-                dim_surface.fill((0, 0, 0, 128))  # 128 is the alpha value for transparency
+                dim_surface.fill((0, 0, 0, 128))
                 screen.blit(dim_surface, (0, 0))
                 pygame.display.flip()
 
-                # Pause for a few seconds
-                # time.sleep(2)  # Adjust the sleep time as needed
-
-
             except Exception as e:
                 print(f"An error occurred: {e}")
-            # walls = [tile for tile in next_map.current_tile_map if tile.wall]
-            # traps = [trap for trap in next_map.current_tile_map if isinstance(trap, Trap)]

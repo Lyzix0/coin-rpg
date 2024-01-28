@@ -1,14 +1,11 @@
-import pygame, sys
-
-from scripts.Tiles import *
-from scripts.Sprites import *
+import sys
+from scripts.GameObjects import Player, Coin, ScoreCounter
 from scripts.Inventory import *
-from scripts.GameObjects import Entity, Form, Direction, Player, Enemy, Coin, ScoreCounter, Door
+from scripts.Tiles import *
 from scripts.Weapons import Weapon
-from scripts.Tiles import Trap
 
 
-class Button():
+class Button:
     def __init__(self, image, pos, text_input, font, base_color, hovering_color):
         self.image = image
         self.x_pos = pos[0]
@@ -44,7 +41,7 @@ class Button():
 pygame.init()
 
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 700
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 BG = pygame.image.load("assets/Background.png")
@@ -87,18 +84,18 @@ def main_menu():
 
         MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-        MENU_TEXT = get_font(60).render("MAIN MENU", True, "#b68f40")
+        MENU_TEXT = get_font(60).render("Coin-rpg", True, "#b68f40")
 
         MENU_RECT = MENU_TEXT.get_rect(center=(SCREEN_WIDTH // 2, 100))
 
         PLAY_BUTTON = Button(image=pygame.image.load("assets/Options Rect.png"), pos=(SCREEN_WIDTH // 2, 250),
-                             text_input="PLAY", font=get_font(50), base_color="#d7fcd4", hovering_color="White")
+                             text_input="Играть", font=get_font(50), base_color="#d7fcd4", hovering_color="White")
 
         OPTIONS_BUTTON = Button(image=pygame.image.load("assets/Play Rect.png"), pos=(SCREEN_WIDTH // 2, 400),
-                                text_input="OPTIONS", font=get_font(50), base_color="#d7fcd4", hovering_color="White")
+                                text_input="Настройки", font=get_font(40), base_color="#d7fcd4", hovering_color="White")
 
         QUIT_BUTTON = Button(image=pygame.image.load("assets/Quit Rect.png"), pos=(SCREEN_WIDTH // 2, 550),
-                             text_input="QUIT", font=get_font(50), base_color="#d7fcd4", hovering_color="White")
+                             text_input="Выйти", font=get_font(40), base_color="#d7fcd4", hovering_color="White")
 
         SCREEN.blit(MENU_TEXT, MENU_RECT)
 
@@ -118,7 +115,7 @@ def main_menu():
                     running = True
                     all_sprites = pygame.sprite.Group()
                     screen_width = 800
-                    screen_height = 600
+                    screen_height = 700
 
                     screen = pygame.display.set_mode((screen_width, screen_height))
 
@@ -131,12 +128,12 @@ def main_menu():
 
                     idle_sprites = SpriteSheet('images/player/idle/idle_sprites.png', 4, 50)
                     run_sprites = SpriteSheet('images/player/run/run_sprites.png', 6, 50)
-                    enemies_list = []
                     new_player.set_sprites(idle_sprites.sprites)
 
                     next_map = TileMap()
                     next_map.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
 
+                    heal = next_map.get_tile(9, 8)
                     heal = next_map.get_tile(9, 8)
                     heal = HealingPotion(heal)
                     heal.place((400, 350))
@@ -144,6 +141,7 @@ def main_menu():
                     inventory = Inventory(screen, new_player)
 
                     next_map.load_level('all_levels/level2.db')
+                    enemies_list = next_map.enemies
 
                     score_counter = ScoreCounter()
                     index = 100
@@ -196,7 +194,7 @@ def main_menu():
                         player_position = new_player.position
                         for enemy in enemies_list:
                             enemy.update(screen, walls=walls, player_bullets=new_player.bullets,
-                                         player_position=player_position)
+                                         player=new_player)
 
                         if pygame.mouse.get_pressed()[0]:
                             new_player.make_shoot()
@@ -221,7 +219,7 @@ def main_menu():
                                 coins.remove(i)
 
                         for enemy in next_map.enemies:
-                            enemy.update(screen, walls, new_player.bullets, player_position)
+                            enemy.update(screen, walls, new_player.bullets, new_player)
 
                         clock.tick(60)
                         pygame.display.flip()
