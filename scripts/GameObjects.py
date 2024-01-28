@@ -8,7 +8,7 @@ import os
 
 last_shot = pygame.time.get_ticks()
 
-
+particles = []
 class GameObject:
     def __init__(self, size: int = 10):
         self._position = None
@@ -293,6 +293,8 @@ class Enemy(Entity, pygame.sprite.Sprite):
             self._last_time_update = now
             self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
 
+
+
     def move_randomly(self, walls=None):
         collision_detected = False
 
@@ -347,6 +349,11 @@ class Enemy(Entity, pygame.sprite.Sprite):
         for bullet in self._bullets:
             bullet.update(screen, walls)
 
+    def spawn_particles(self, x, y):
+        particle = Object(x, y, 40, 40, pygame.image.load("blood.png"))
+        particles.append(particle)
+
+
     def update(self, screen, walls=None, player_bullets: [PlayerBullet] = None, player: Player = None):
         if player_bullets is None:
             player_bullets = []
@@ -364,6 +371,9 @@ class Enemy(Entity, pygame.sprite.Sprite):
                 if self.rect.colliderect(bullet.rect) and bullet.can_damage:
                     self.take_damage(10)
                     bullet.can_damage = False
+                    self.spawn_particles(self.position.x, self.position.y)
+
+
 
         self.update_bullets(screen, walls)
 
@@ -491,3 +501,50 @@ class Door(GameObject, pygame.sprite.Sprite):
 
             except Exception as e:
                 print(f"An error occurred: {e}")
+
+
+class Object:
+    def __init__(self, x, y, width, height, image, animation_delay: int = 200, sprite_size: int = 32):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.image = image
+        self.velocity = [0, 0]
+        self.collider = [width, height]
+        self._last_time_update = 0
+        self.animation_delay = animation_delay
+        self.sprite_number = 0
+        self.sprites = self.load_sprites()
+        self.sprite_size = sprite_size
+
+    def load_sprites(self):
+        sprite_folder = "images/blood"  # Папка с изображениями для анимации
+        sprite_files = [f for f in os.listdir(sprite_folder) if f.endswith('.png')]
+        sprite_files.sort()
+        sprites = [pygame.transform.scale(pygame.image.load(os.path.join(sprite_folder, f)),
+                                          (40, 40)) for f in sprite_files]
+        return sprites
+
+    def update_animation(self):
+        now = pygame.time.get_ticks()
+        if now - self._last_time_update > self.animation_delay:
+            self._last_time_update = now
+            self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
+
+    def draw(self, screen):
+        self.update_animation()
+        sprite = self.sprites[self.sprite_number]
+        screen.blit(sprite, (self.x, self.y))
+
+# class Particles(Enemy, pygame.sprite.Sprite):
+#     def __init__(self, x, y, width, height, image, screen):
+#         self.x = x
+#         self.y = y
+#         self.width = width
+#         self.height = height
+#         self.image = image
+#         self.screen = screen
+#         self.partics = []
+#     def draw(self):
+#         self.screen.blit(pygame.transform.scale(self.image, (self.width, self.height)), (self.x, self.y))

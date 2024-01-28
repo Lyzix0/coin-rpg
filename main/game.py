@@ -1,5 +1,5 @@
 import sys
-from scripts.GameObjects import Player, Coin, ScoreCounter
+from scripts.GameObjects import Player, Coin, ScoreCounter, particles
 from scripts.Inventory import *
 from scripts.Tiles import *
 from scripts.Weapons import Weapon
@@ -198,9 +198,21 @@ def main_menu():
 
                         if pygame.mouse.get_pressed()[0]:
                             new_player.make_shoot()
+                        # for i in particles:
+                        #     i.draw(screen)
+                        #     #particles.remove(i)
+                        # new_player.draw_health_bar(screen)
+                        # inventory.draw_inventory()
 
-                        new_player.draw_health_bar(screen)
-                        inventory.draw_inventory()
+                        for p in particles:
+                            p.draw(screen)
+                            p.image.set_alpha(p.image.get_alpha() - 10)
+                            if p.image.get_alpha() == 0:
+                                particles.remove(p)
+                                continue
+                            particles.remove(p)
+                            particles.insert(0, p)
+
 
                         if index != 100:
                             inventory.use_by_index(index)
