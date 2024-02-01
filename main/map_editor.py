@@ -1,125 +1,208 @@
 import pygame
 
+from scripts.GameObjects import Door
 from scripts.Sprites import SpriteSheet
 from scripts.Tiles import TileImages, TileMap, Tile, Trap, Enemy
 import sqlite3
 
 
-def create_level(db_name: str):
-    conn = sqlite3.connect(db_name)
+class InputBox:
+    def __init__(self, x, y, w, h, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.color = pygame.Color('lightskyblue3')
+        self.text = text
+        self.txt_surface = pygame.font.Font(None, 32).render(text, True, self.color)
+        self.active = False
 
-    cur = conn.cursor()
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 3:
+                if self.rect.collidepoint(event.pos):
+                    self.active = not self.active
+                else:
+                    self.active = False
 
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS tiles (
-            image_path TEXT,
-            row INTEGER,
-            col INTEGER,
-            x INTEGER,
-            y INTEGER,
-            width INTEGER,
-            height INTEGER,
-            rotated BOOLEAN,
-            wall BOOLEAN
-        );
-    ''')
+            self.color = pygame.Color('dodgerblue2') if self.active else pygame.Color('lightskyblue3')
+        if event.type == pygame.KEYDOWN:
+            if self.active:
+                if event.key == pygame.K_RETURN:
+                    print(self.text)
+                    self.text = ''
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+                self.txt_surface = pygame.font.Font(None, 32).render(self.text, True, self.color)
 
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS traps (
-            image_path TEXT,
-            cols INTEGER,
-            x INTEGER,
-            y INTEGER,
-            width INTEGER,
-            height INTEGER,
-            sprites_damage TEXT
-        );
-    ''')
+    def update(self):
+        width = max(200, self.txt_surface.get_width() + 10)
+        self.rect.w = width
 
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS enemies (
-            image_path TEXT,
-            cols INTEGER,
-            x INTEGER,
-            y INTEGER,
-            width INTEGER,
-            height INTEGER
-        );
-    ''')
-
-    conn.commit()
-    conn.close()
+    def draw(self, screen):
+        screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
+        pygame.draw.rect(screen, self.color, self.rect, 2)
 
 
-def save_tiles(tile_map):
-    create_level(level_path)
+class Level:
+    def __init__(self, name, tilemap: TileMap = None):
+        self.name = name
+        self.created = False
+        self.tilemap = tilemap
 
-    db = sqlite3.connect(level_path)
-    cursor = db.cursor()
+    def create_level(self):
+        """
 
-    cursor.execute('DELETE FROM tiles')
+        :type db_name: название базы данных
+        """
+        conn = sqlite3.connect(self.name)
 
-    for tile in tile_map.current_tile_map:
-        rect = tile.rect.copy()
+        cur = conn.cursor()
 
-        path = tile_map.path
-        row = tile.row
-        col = tile.col
-        x, y, width, height = rect.x, rect.y, rect.width, rect.height
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS tiles (
+                image_path TEXT,
+                row INTEGER,
+                col INTEGER,
+                x INTEGER,
+                y INTEGER,
+                width INTEGER,
+                height INTEGER,
+                rotated BOOLEAN,
+                wall BOOLEAN
+            );
+        ''')
 
-        query = f'INSERT INTO tiles (image_path, row, col, x, y, width, height, rotated, wall)' \
-                f' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        values = (path, row, col, x, y, width, height, tile.rotated, tile.wall)
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS traps (
+                image_path TEXT,
+                cols INTEGER,
+                x INTEGER,
+                y INTEGER,
+                width INTEGER,
+                height INTEGER,
+                sprites_damage TEXT
+            );
+        ''')
 
-        cursor.execute(query, values)
-        db.commit()
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS enemies (
+                image_path TEXT,
+                cols INTEGER,
+                x INTEGER,
+                y INTEGER,
+                width INTEGER,
+                height INTEGER
+            );
+        ''')
 
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS doors (
+                image_path TEXT,
+                row INTEGER,
+                col INTEGER,
+                x INTEGER,
+                y INTEGER,
+                width INTEGER,
+                height INTEGER,
+                level_name TEXT
+            );
+        ''')
 
-def save_traps(tile_map, path='images/peaks/peaks.png', sprites_damage: [bool] = None):
-    if sprites_damage is None:
-        sprites_damage = [True, True, False, False]
+        conn.commit()
+        conn.close()
 
-    create_level(level_path)
+        self.created = True
 
-    db = sqlite3.connect(level_path)
-    cursor = db.cursor()
+    def save_tiles(self):
+        if not self.created:
+            self.create_level()
 
-    cursor.execute('DELETE FROM traps')
-    for tile in tile_map.current_tile_map:
-        if not isinstance(tile, Trap):
-            continue
+        db = sqlite3.connect(level_path)
+        cursor = db.cursor()
 
-        rect = tile.rect.copy()
+        cursor.execute('DELETE FROM tiles')
 
-        x, y, width, height = rect.x, rect.y, rect.width, rect.height
-        cols = len(tile.sprites.sprites)
+        for tile in tile_map.current_tile_map:
+            rect = tile.rect.copy()
 
-        query = f'INSERT INTO traps (image_path, cols, x, y, width, height, sprites_damage)' \
-                f' VALUES (?, ?, ?, ?, ?, ?, ?)'
-        values = (path, cols, x, y, width, height, " ".join(map(str, sprites_damage)))
+            path = tile_map.path
+            row = tile.row
+            col = tile.col
+            x, y, width, height = rect.x, rect.y, rect.width, rect.height
 
-        cursor.execute(query, values)
-        db.commit()
+            query = f'INSERT INTO tiles (image_path, row, col, x, y, width, height, rotated, wall)' \
+                    f' VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            values = (path, row, col, x, y, width, height, tile.rotated, tile.wall)
 
+            cursor.execute(query, values)
+            db.commit()
 
-def save_enemies():
-    create_level(level_path)
+    def save_traps(self, path='images/peaks/peaks.png', sprites_damage: [bool] = None):
+        if sprites_damage is None:
+            sprites_damage = [True, True, False, False]
 
-    db = sqlite3.connect(level_path)
-    cursor = db.cursor()
+        if not self.created:
+            self.create_level()
 
-    cursor.execute('DELETE FROM enemies')
+        db = sqlite3.connect(self.name)
+        cursor = db.cursor()
 
-    for current_enemy in enemies:
-        rect = current_enemy.rect.copy()
+        cursor.execute('DELETE FROM traps')
+        for tile in tile_map.current_tile_map:
+            if not isinstance(tile, Trap):
+                continue
 
-        x, y, width, height = rect.x, rect.y, rect.width, rect.height
+            rect = tile.rect.copy()
 
-        query = f'INSERT INTO enemies (image_path, cols, x, y, width, height)' \
-                f' VALUES (?, ?, ?, ?, ?, ?)'
-        values = (current_enemy.name, 4, x, y, width, height)
+            x, y, width, height = rect.x, rect.y, rect.width, rect.height
+            cols = len(tile.sprites.sprites)
 
-        cursor.execute(query, values)
+            query = f'INSERT INTO traps (image_path, cols, x, y, width, height, sprites_damage)' \
+                    f' VALUES (?, ?, ?, ?, ?, ?, ?)'
+            values = (path, cols, x, y, width, height, " ".join(map(str, sprites_damage)))
+
+            cursor.execute(query, values)
+            db.commit()
+
+    def save_enemies(self):
+        if not self.created:
+            self.create_level()
+
+        db = sqlite3.connect(self.name)
+        cursor = db.cursor()
+
+        cursor.execute('DELETE FROM enemies')
+
+        for current_enemy in enemies:
+            rect = current_enemy.rect.copy()
+
+            x, y, width, height = rect.x, rect.y, rect.width, rect.height
+
+            query = f'INSERT INTO enemies (image_path, cols, x, y, width, height)' \
+                    f' VALUES (?, ?, ?, ?, ?, ?)'
+            values = (current_enemy.name, 4, x, y, width, height)
+
+            cursor.execute(query, values)
+            db.commit()
+
+    def save_doors(self):
+        if not self.created:
+            self.create_level()
+
+        db = sqlite3.connect(self.name)
+        cursor = db.cursor()
+
+        cursor.execute('DELETE FROM doors')
+
+        for current_door in all_doors:
+            print(current_door.level_name)
+            query = f'INSERT INTO doors (image_path, row, col, x, y, width, height, level_name)' \
+                    f' VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            values = ('images/tilesets/DoorsTileset.png', current_door.row, current_door.col, current_door.position.x,
+                      current_door.position.y, current_door.size, current_door.size, current_door.level_name)
+
+            cursor.execute(query, values)
+
         db.commit()
 
 
@@ -153,6 +236,9 @@ tile_size = 40
 
 tile_map = TileMap()
 tile_map.load_tilemap("images/tilesets/Dungeon_Tileset.png", rows=10, cols=10, tile_size=tile_size)
+door_tilemap = TileMap()
+door_tilemap.load_tilemap("images/tilesets/DoorsTileset.png", rows=3, cols=3, tile_size=tile_size)
+current_tilemap = tile_map
 
 map_width, map_height = round(screen_width / tile_size), round(screen_height / tile_size)
 
@@ -165,8 +251,16 @@ current_tile_col = 0
 current_tile = tile_map.get_tile(current_tile_row, current_tile_col)
 rotated = False
 
+all_doors = []
+
+input_box1 = InputBox(5, 60, 140, 32)
+
 while running:
     for event in pygame.event.get():
+        input_box1.handle_event(event)
+        if input_box1.active:
+            continue
+
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -174,31 +268,39 @@ while running:
                 tile_x = event.pos[0] // tile_size
                 tile_y = event.pos[1] // tile_size
                 if 0 <= tile_x < map_width and 0 <= tile_y < map_height:
-                    new_tile = tile_map.get_tile(current_tile_row, current_tile_col)
+                    new_tile = current_tilemap.get_tile(current_tile_row, current_tile_col)
                     new_tile.rect = pygame.Rect(tile_x * tile_size, tile_y * tile_size, tile_size, tile_size)
                     new_tile.rotate(rotated)
 
                     if tile_wall:
                         new_tile.wall = True
 
-                    tile_map.add_tile(new_tile)
+                    if not show_doors_only or input_box1.text:
+                        current_tilemap.add_tile(new_tile)
+
+                    if show_doors_only and input_box1.text:
+                        door = Door(new_tile, int(input_box1.text), 40, row=current_tile_row, col=current_tile_col)
+                        door.level_name = input_box1.text
+                        door.place((new_tile.rect.x + 10, new_tile.rect.y + 10))
+                        all_doors.append(door)
+
             elif event.button == 3:
                 tile_x = event.pos[0] // tile_size
                 tile_y = event.pos[1] // tile_size
                 if 0 <= tile_x < map_width and 0 <= tile_y < map_height:
-                    tile_map.current_tile_map = [tile for tile in tile_map.current_tile_map
-                                                 if tile.x != tile_x * tile_size or tile.y != tile_y * tile_size]
+                    current_tilemap.current_tile_map = [tile for tile in current_tilemap.current_tile_map
+                                                        if tile.x != tile_x * tile_size or tile.y != tile_y * tile_size]
 
         elif event.type == pygame.KEYDOWN:
             match event.key:
                 case pygame.K_w:
-                    current_tile_row = (current_tile_row - 1) % tile_map.rows
+                    current_tile_row = (current_tile_row - 1) % current_tilemap.rows
                 case pygame.K_s:
-                    current_tile_row = (current_tile_row + 1) % tile_map.rows
+                    current_tile_row = (current_tile_row + 1) % current_tilemap.rows
                 case pygame.K_a:
-                    current_tile_col = (current_tile_col - 1) % tile_map.cols
+                    current_tile_col = (current_tile_col - 1) % current_tilemap.cols
                 case pygame.K_d:
-                    current_tile_col = (current_tile_col + 1) % tile_map.cols
+                    current_tile_col = (current_tile_col + 1) % current_tilemap.cols
 
             if event.key == pygame.K_e:
                 tile_wall = not tile_wall
@@ -208,12 +310,13 @@ while running:
                 current_tile.rotate(rotated)
 
             if event.key == pygame.K_s and pygame.key.get_mods() & pygame.KMOD_CTRL:
-                create_level(level_path)
-                save_tiles(tile_map)
-                save_traps(tile_map)
-                save_enemies()
+                level = Level(level_path, tile_map)
+                level.save_enemies()
+                level.save_tiles()
+                level.save_traps()
+                level.save_doors()
 
-            current_tile = tile_map.get_tile(current_tile_row, current_tile_col)
+            current_tile = current_tilemap.get_tile(current_tile_row, current_tile_col)
 
             if event.key == pygame.K_t:
                 mouse_pos = pygame.mouse.get_pos()
@@ -236,12 +339,19 @@ while running:
             elif event.key == pygame.K_2:
                 place_enemy('images/enemies/enemy2.png', 4, 'white', enemy_name='enemy2')
 
-            if event.key == pygame.K_d:
+            if event.key == pygame.K_f:
                 show_doors_only = not show_doors_only
-                tile_map
+                if show_doors_only:
+                    current_tilemap = door_tilemap
+                else:
+                    current_tilemap = tile_map
+                current_tile = current_tilemap.get_tile(0, 0)
+                current_tile_col = 0
+                current_tile_row = 0
 
     screen.fill((255, 255, 255))
     tile_map.draw_tiles(screen, glow_walls=True)
+    # door_tilemap.draw_tiles(screen)
 
     rotated_tile_image = pygame.transform.flip(current_tile.image, rotated, False)
 
@@ -254,6 +364,14 @@ while running:
         text_wall = font.render("Тип тайла: стена", True, 'black')
     else:
         text_wall = font.render("Тип тайла: обычный", True, 'black')
+
+    if show_doors_only:
+        input_box1.update()
+        input_box1.draw(screen)
+
+    for door in all_doors:
+        door.draw(screen)
+
     screen.blit(text_wall, (10, 10))
     pygame.display.flip()
 

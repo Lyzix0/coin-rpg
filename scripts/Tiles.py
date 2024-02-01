@@ -4,7 +4,7 @@ import time
 import pygame
 from scripts.Base import load_image
 from scripts.Sprites import SpriteSheet
-from scripts.GameObjects import Player, Coin, Enemy
+from scripts.GameObjects import Player, Coin, Enemy, Door
 
 
 class Tile(pygame.sprite.Sprite):
@@ -117,6 +117,7 @@ class TileMap:
         self.current_tile_map = []
         self.tile_size = 0
         self.enemies = []
+        self.doors = []
 
     def draw_all_tiles(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
         if self.tile_map_surface is None:
@@ -139,6 +140,9 @@ class TileMap:
             if glow_walls and tile.wall:
                 pygame.draw.rect(screen, color='green', rect=tile.rect, width=1)
 
+        for door in self.doors:
+            door.draw(screen)
+
     def get_tile(self, row, col):
         new_tile = Tile(self.tile_map_surface[row][col], row=row, col=col)
         return new_tile
@@ -149,6 +153,8 @@ class TileMap:
     def load_level(self, level_path):
         db = sqlite3.connect(level_path)
         cur = db.cursor()
+
+        self.current_tile_map.clear()
 
         tiles = cur.execute(f'SELECT * FROM tiles').fetchall()
 
@@ -173,6 +179,8 @@ class TileMap:
 
             self.current_tile_map.append(new_tile)
 
+        self.enemies.clear()
+
         enemies = cur.execute('SELECT * FROM enemies').fetchall()
         for enemy in enemies:
             if enemy[0] == 'enemy1':
@@ -185,6 +193,18 @@ class TileMap:
             new_enemy.set_sprites(SpriteSheet(path, cols, 40, 'white').sprites)
             new_enemy.place((enemy[2], enemy[3]))
             self.enemies.append(new_enemy)
+
+        self.doors.clear()
+
+        doors = cur.execute('SELECT * FROM doors').fetchall()
+        doors_tilemap = TileMap()
+        doors_tilemap.load_tilemap('images/tilesets/DoorsTileset.png', 3, 3, 40)
+
+        for door in doors:
+            door_tile = doors_tilemap.get_tile(door[1], door[2])
+            new_door = Door(door_tile, door[7], door[5])
+            new_door.place((door[3], door[4]))
+            self.doors.append(new_door)
 
     def load_tilemap(self, path, rows=1, cols=1, tile_size=32):
         """
@@ -204,8 +224,9 @@ class TileMap:
         self.tile_size = tile_size
         self.path = path
         spritesheet = load_image(path)
-        new_width = self.tile_size / (spritesheet.get_width() / rows) * spritesheet.get_width()
-        new_height = self.tile_size / (spritesheet.get_height() / cols) * spritesheet.get_height()
+
+        new_width = self.tile_size * rows
+        new_height = self.tile_size * cols
 
         spritesheet = pygame.transform.scale(spritesheet, (new_width, new_height))
 

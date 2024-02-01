@@ -450,19 +450,17 @@ class Coin(pygame.sprite.Sprite):
 
 
 class Door(GameObject, pygame.sprite.Sprite):
-    def __init__(self, icon, size: int = 40, is_locked: bool = True, active_objects: list = None,
-                 all_sprites: list = None, enemies_list: list = None):
+    def __init__(self, icon, level_number: int, size: int = 40, all_sprites: list = None, row=None, col=None):
         super().__init__(size)
-        self.is_locked = is_locked
         if type(icon) == 'str':
             self.icon = pygame.image.load(icon)
         else:
             self.icon = icon.image
-        self.active_objects = active_objects
+
+        self.row = row
+        self.col = col
         self.all_sprites = all_sprites
-        self.level_name = 2
-        self.enemies_list = enemies_list
-        self.active_objects = active_objects
+        self.level_name = level_number
 
     def draw(self, screen: pygame.surface):
         if not self.placed:
@@ -471,14 +469,14 @@ class Door(GameObject, pygame.sprite.Sprite):
         icon = pygame.transform.scale(self.icon, icon_size)
         screen.blit(icon, (self.position.x - 10, self.position.y - 10))
 
-    def handle_collision(self, player, next_map, screen: pygame.surface):
+    def handle_collision(self, player, tilemap, screen: pygame.surface):
         if self.position.distance_to(player.position) < (self.size + player.size) / 2:
-            for _ in next_map.current_tile_map:
-                next_map.current_tile_map.remove(_)
-            next_map.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
+            for _ in tilemap.current_tile_map:
+                tilemap.current_tile_map.remove(_)
+            tilemap.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
             try:
                 if os.path.exists(f'all_levels/level{self.level_name}.db'):
-                    next_map.load_level(f'all_levels/level{self.level_name}.db')
+                    tilemap.load_level(f'all_levels/level{self.level_name}.db')
 
                 if self.all_sprites is not None:
                     self.all_sprites.remove(self)

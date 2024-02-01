@@ -122,7 +122,7 @@ def main_menu():
                     pygame.display.set_caption("Test field")
 
                     new_player = Player(size=50, animation_delay=200)
-                    new_player.place((300, 250))
+                    new_player.place((500, 250))
                     weapon = Weapon(10, 1, 10, 'images/bullet.png')
                     new_player.add_weapon(weapon)
 
@@ -133,14 +133,9 @@ def main_menu():
                     next_map = TileMap()
                     next_map.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
 
-                    heal = next_map.get_tile(9, 8)
-                    heal = next_map.get_tile(9, 8)
-                    heal = HealingPotion(heal)
-                    heal.place((400, 350))
-
                     inventory = Inventory(screen, new_player)
 
-                    next_map.load_level('all_levels/level2.db')
+                    next_map.load_level('all_levels/level1.db')
                     enemies_list = next_map.enemies
 
                     score_counter = ScoreCounter()
@@ -188,10 +183,6 @@ def main_menu():
 
                         next_map.draw_tiles(screen)
 
-                        heal.draw(screen)
-                        heal.handle_collision(inventory, new_player)
-
-                        player_position = new_player.position
                         for enemy in enemies_list:
                             enemy.update(screen, walls=walls, player_bullets=new_player.bullets,
                                          player=new_player)
@@ -220,6 +211,10 @@ def main_menu():
 
                         for enemy in next_map.enemies:
                             enemy.update(screen, walls, new_player.bullets, new_player)
+
+                        for door in next_map.doors:
+                            door: Door
+                            door.handle_collision(new_player, next_map, screen)
 
                         clock.tick(60)
                         pygame.display.flip()
