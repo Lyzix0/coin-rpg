@@ -480,13 +480,13 @@ class Door(GameObject, pygame.sprite.Sprite):
         screen.blit(icon, (self.position.x - 10, self.position.y - 10))
 
     def handle_collision(self, player, tilemap, screen: pygame.surface):
-        if self.position.distance_to(player.position) < (self.size + player.size) / 2:
+        if pygame.Rect.colliderect(player.rect, pygame.Rect(*self.position, self.size, self.size)):
             for _ in tilemap.current_tile_map:
                 tilemap.current_tile_map.remove(_)
             tilemap.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
             try:
                 if os.path.exists(f'all_levels/level{self.level_name}.db'):
-                    tilemap.load_level(f'all_levels/level{self.level_name}.db')
+                    tilemap.load_level(f'all_levels/level{self.level_name}.db', player)
 
                 if self.all_sprites is not None:
                     self.all_sprites.remove(self)

@@ -118,6 +118,7 @@ class TileMap:
         self.tile_size = 0
         self.enemies = []
         self.doors = []
+        self.walls = []
 
     def draw_all_tiles(self, screen, x_offset: int | float = 0, y_offset: int | float = 0):
         if self.tile_map_surface is None:
@@ -150,10 +151,11 @@ class TileMap:
     def add_tile(self, tile: Tile):
         self.current_tile_map.append(tile)
 
-    def load_level(self, level_path):
+    def load_level(self, level_path, player: Player):
         db = sqlite3.connect(level_path)
         cur = db.cursor()
 
+        player.bullets.clear()
         self.current_tile_map.clear()
 
         tiles = cur.execute(f'SELECT * FROM tiles').fetchall()
@@ -168,6 +170,8 @@ class TileMap:
                     new_tile.rotate(True)
 
                 self.current_tile_map.append(new_tile)
+
+        self.walls = [tile for tile in self.current_tile_map if tile.wall]
 
         traps = cur.execute('SELECT * FROM traps').fetchall()
         for trap in traps:

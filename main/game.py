@@ -79,6 +79,10 @@ def options():
 
 
 def main_menu():
+    start_time = time.time()
+    shoot_cooldown = 1
+    last_shoot_time = start_time
+
     while True:
         SCREEN.blit(BG, (0, 0))
 
@@ -135,7 +139,7 @@ def main_menu():
 
                     inventory = Inventory(screen, new_player)
 
-                    next_map.load_level('all_levels/level1.db')
+                    next_map.load_level('all_levels/level1.db', new_player)
                     enemies_list = next_map.enemies
 
                     score_counter = ScoreCounter()
@@ -146,15 +150,22 @@ def main_menu():
                     coin = Coin(coin_position, score_counter, all_sprites)
                     coins.append(coin)
 
-                    walls = [tile for tile in next_map.current_tile_map if tile.wall]
                     traps = [trap for trap in next_map.current_tile_map if isinstance(trap, Trap)]
 
                     while running:
+                        current_time = time.time()
+
+                        if pygame.mouse.get_pressed()[0] and (current_time - start_time >= 1) and (
+                                current_time - last_shoot_time >= shoot_cooldown):
+                            new_player.make_shoot()
+                            last_shoot_time = current_time
+
                         screen.fill(pygame.color.Color(36, 20, 25))
 
                         for event in pygame.event.get():
                             if event.type == pygame.QUIT:
                                 running = False
+                                start_time = current_time
                             elif event.type == pygame.KEYDOWN:
                                 if event.key == pygame.K_1:
                                     index = 0
@@ -184,16 +195,12 @@ def main_menu():
                         next_map.draw_tiles(screen)
 
                         for enemy in enemies_list:
-                            enemy.update(screen, walls=walls, player_bullets=new_player.bullets,
+                            enemy.update(screen, walls=next_map.walls, player_bullets=new_player.bullets,
                                          player=new_player)
 
-                        if pygame.mouse.get_pressed()[0]:
-                            new_player.make_shoot()
-                        # for i in particles:
-                        #     i.draw(screen)
-                        #     #particles.remove(i)
-                        # new_player.draw_health_bar(screen)
-                        # inventory.draw_inventory()
+                        inventory.draw_inventory()
+
+                        new_player.draw_health_bar(screen)
 
                         for p in particles:
                             p.draw(screen)
@@ -204,7 +211,6 @@ def main_menu():
                             particles.remove(p)
                             particles.insert(0, p)
 
-
                         if index != 100:
                             inventory.use_by_index(index)
                             index = 100
@@ -212,7 +218,7 @@ def main_menu():
                         for trap in traps:
                             trap.handle_collision(new_player)
 
-                        new_player.update(screen, draw_surface=False, walls=walls, tilemaps=[next_map],
+                        new_player.update(screen, draw_surface=False, walls=next_map.walls, tilemaps=[next_map],
                                           all_enemy_bullets=[enemy.bullets for enemy in enemies_list])
 
                         score_counter.draw_score(screen)
@@ -222,7 +228,7 @@ def main_menu():
                                 coins.remove(i)
 
                         for enemy in next_map.enemies:
-                            enemy.update(screen, walls, new_player.bullets, new_player)
+                            enemy.update(screen, next_map.walls, new_player.bullets, new_player)
 
                         for door in next_map.doors:
                             door: Door
