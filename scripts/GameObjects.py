@@ -125,13 +125,13 @@ class Player(Entity, pygame.sprite.Sprite):
 
         self.animation_delay = animation_delay
         self._last_time_update = 0
-        self.rect = pygame.Rect(0, 0, 32, 32)
+        self.rect = None
 
     def apply_healing(self, amount):
         self._health = min(self._health + amount, 100)
 
     def apply_poison_effect(self, duration: int):
-        self.speed /= 2  # Reduce speed to half
+        self.speed /= 2
         self.poison_effect_end_time = pygame.time.get_ticks() + duration
 
     def can_move_left(self):
@@ -162,7 +162,7 @@ class Player(Entity, pygame.sprite.Sprite):
         if keys[pygame.K_s] and self.can_move_down(screen.get_height()):
             dy += self.speed
 
-        rect_after_move = self.rect.copy()
+        rect_after_move = self.rect.copy() if self.rect else pygame.Rect(0, 0, 32, 32)
         rect_after_move.x += dx
         rect_after_move.y += dy
 
@@ -198,9 +198,10 @@ class Player(Entity, pygame.sprite.Sprite):
         if not self.current_weapon:
             return
 
-        bullet = self.current_weapon.shoot(pygame.Vector2(*self.rect.center))
-        if bullet:
-            self._bullets.append(bullet)
+        if self.rect:
+            bullet = self.current_weapon.shoot(pygame.Vector2(*self.rect.center))
+            if bullet:
+                self._bullets.append(bullet)
 
     def draw(self, screen, draw_surface: bool = False, walls=None):
         if walls is None:

@@ -126,7 +126,7 @@ def main_menu():
                     pygame.display.set_caption("Test field")
 
                     new_player = Player(size=50, animation_delay=200)
-                    new_player.place((500, 250))
+                    new_player.place((320, 400))
                     weapon = Weapon(10, 1, 10, 'images/bullet.png')
                     new_player.add_weapon(weapon)
 
@@ -146,7 +146,7 @@ def main_menu():
                     index = 100
 
                     coins = []
-                    coin_position = pygame.Vector2(500, 250)
+                    coin_position = pygame.Vector2(500, 350)
                     coin = Coin(coin_position, score_counter, all_sprites)
                     coins.append(coin)
 
@@ -216,7 +216,8 @@ def main_menu():
                             index = 100
 
                         for trap in traps:
-                            trap.handle_collision(new_player)
+                            if new_player.rect:
+                                trap.handle_collision(new_player)
 
                         new_player.update(screen, draw_surface=False, walls=next_map.walls, tilemaps=[next_map],
                                           all_enemy_bullets=[enemy.bullets for enemy in enemies_list])

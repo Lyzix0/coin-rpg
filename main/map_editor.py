@@ -222,7 +222,7 @@ pygame.display.set_caption("Simple Map Editor")
 
 font = pygame.font.Font(None, 36)
 text_wall = font.render("Тип тайла: обычный", True, 'black')
-level_path = 'all_levels/level3.db'
+level_path = 'all_levels/level2.db'
 tile_wall = False
 show_doors_only = False
 
