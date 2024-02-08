@@ -9,6 +9,8 @@ import os
 last_shot = pygame.time.get_ticks()
 
 particles = []
+
+
 class GameObject:
     def __init__(self, size: int = 10):
         self._position = None
@@ -169,6 +171,9 @@ class Player(Entity, pygame.sprite.Sprite):
         collision_detected = False
 
         walls = [tile for tilemap in tilemaps for tile in tilemap.current_tile_map if tile.wall]
+        for tilemap in tilemaps:
+            for door in tilemap.doors:
+                walls.append(door)
 
         for wall in walls:
             if (rect_after_move.right > wall.rect.left and
@@ -294,8 +299,6 @@ class Enemy(Entity, pygame.sprite.Sprite):
             self._last_time_update = now
             self.sprite_number = (self.sprite_number + 1) % len(self.sprites)
 
-
-
     def move_randomly(self, walls=None):
         collision_detected = False
 
@@ -350,10 +353,10 @@ class Enemy(Entity, pygame.sprite.Sprite):
         for bullet in self._bullets:
             bullet.update(screen, walls)
 
-    def spawn_particles(self, x, y):
+    @staticmethod
+    def spawn_particles(x, y):
         particle = Object(x, y, 40, 40, pygame.image.load("blood.png"))
         particles.append(particle)
-
 
     def update(self, screen, walls=None, player_bullets: [PlayerBullet] = None, player: Player = None):
         if player_bullets is None:
@@ -373,8 +376,6 @@ class Enemy(Entity, pygame.sprite.Sprite):
                     self.take_damage(10)
                     bullet.can_damage = False
                     self.spawn_particles(self.position.x, self.position.y)
-
-
 
         self.update_bullets(screen, walls)
 
@@ -401,6 +402,13 @@ class Enemy(Entity, pygame.sprite.Sprite):
     def bullets(self):
         return self._bullets
 
+    def _die(self):
+        super()._die()
+        rand = random.random()
+        if rand > 0.5:
+            coin = Coin(self.position, score_counter, coins_sprites)
+            coins.append(coin)
+
 
 class ScoreCounter:
     def __init__(self):
@@ -417,6 +425,12 @@ class ScoreCounter:
     def draw_score(self, screen):
         text = self.font.render(f"Coins:{self.score}", True, self.text_color)
         screen.blit(text, (10, 10))
+
+
+pygame.init()
+score_counter = ScoreCounter()
+coins_sprites = pygame.sprite.Group()
+coins = []
 
 
 class Coin(pygame.sprite.Sprite):
@@ -472,6 +486,7 @@ class Door(GameObject, pygame.sprite.Sprite):
         self.col = col
         self.all_sprites = all_sprites
         self.level_name = level_number
+        self.rect = pygame.Rect(0, 0, self.size, self.size)
 
     def draw(self, screen: pygame.surface):
         if not self.placed:
@@ -479,15 +494,21 @@ class Door(GameObject, pygame.sprite.Sprite):
         icon_size = (self.size, self.size)
         icon = pygame.transform.scale(self.icon, icon_size)
         screen.blit(icon, (self.position.x - 10, self.position.y - 10))
+        self.rect = pygame.Rect(self.position.x - 10, self.position.y - 10, self.size, self.size)
 
-    def handle_collision(self, player, tilemap, screen: pygame.surface):
-        if pygame.Rect.colliderect(player.rect, pygame.Rect(*self.position, self.size, self.size)):
+    def handle_collision(self, player, tilemap, screen: pygame.surface, coins=[]):
+        door_rect = pygame.Rect(self.rect.topleft[0] - 5, self.rect.topleft[1] - 5, self.size + 10, self.size + 10)
+        # pygame.draw.rect(screen, 'blue', door_rect, 1)
+        if pygame.Rect.colliderect(player.rect, door_rect) \
+                and all(not enemy.alive for enemy in tilemap.enemies):
+
             for _ in tilemap.current_tile_map:
                 tilemap.current_tile_map.remove(_)
+
             tilemap.load_tilemap('images/tilesets/Dungeon_Tileset.png', rows=10, cols=10, tile_size=40)
             try:
                 if os.path.exists(f'all_levels/level{self.level_name}.db'):
-                    tilemap.load_level(f'all_levels/level{self.level_name}.db', player)
+                    tilemap.load_level(f'all_levels/level{self.level_name}.db', player, coins)
 
                 if self.all_sprites is not None:
                     self.all_sprites.remove(self)

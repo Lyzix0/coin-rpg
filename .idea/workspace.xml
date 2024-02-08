@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2aa14cc0-b307-4be0-aa75-ac75131b9de4" name="Changes" comment="add new level">
+      <change afterPath="$PROJECT_DIR$/.idea/discord.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level10.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level11.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level12.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level13.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level14.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level15.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level4.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level5.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level6.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level7.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level8.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/all_levels/level9.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main/game_data.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/all_levels/level3.db" beforeDir="false" afterPath="$PROJECT_DIR$/main/all_levels/level3.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/assets/Options Rect.png" beforeDir="false" afterPath="$PROJECT_DIR$/main/assets/Options Rect.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/assets/Play Rect.png" beforeDir="false" afterPath="$PROJECT_DIR$/main/assets/Play Rect.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/main/game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main/map_editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/main/map_editor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/GameObjects.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/GameObjects.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/Tiles.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/Tiles.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2bRh3ZXURxfhNKD5FFxBFBmm8nr" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/phyton projects/coin-rpg/main/game.py&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\phyton projects\coin-rpg\main\all_levels" />
+      <recent name="C:\phyton projects\coin-rpg\images" />
+      <recent name="C:\phyton projects\coin-rpg\images\enemies" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.game">
+    <configuration name="game" type="PythonConfigurationType" factoryName="Python">
+      <module name="coin-rpg" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\maksi\AppData\Local\Programs\Python\Python310\python.exe" />
+      <option name="SDK_NAME" value="Python 3.10" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/main" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main/game.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="map_editor" type="PythonConfigurationType" factoryName="Python">
+      <module name="coin-rpg" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\Users\maksi\AppData\Local\Programs\Python\Python310\python.exe" />
+      <option name="SDK_NAME" value="Python 3.10" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/main" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main/map_editor.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.game" />
+      <item itemvalue="Python.map_editor" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2aa14cc0-b307-4be0-aa75-ac75131b9de4" name="Changes" comment="" />
+      <created>1706183599560</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1706183599560</updated>
+    </task>
+    <task id="LOCAL-00001" summary="enemies in map editor">
+      <option name="closed" value="true" />
+      <created>1706193469091</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1706193469091</updated>
+    </task>
+    <task id="LOCAL-00002" summary="enemies in map editor">
+      <option name="closed" value="true" />
+      <created>1706193543736</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1706193543736</updated>
+    </task>
+    <task id="LOCAL-00003" summary="enemies in map editor">
+      <option name="closed" value="true" />
+      <created>1706199192510</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1706199192510</updated>
+    </task>
+    <task id="LOCAL-00004" summary="minor fixes">
+      <option name="closed" value="true" />
+      <created>1706273662580</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1706273662580</updated>
+    </task>
+    <task id="LOCAL-00005" summary="new version">
+      <option name="closed" value="true" />
+      <created>1706444290851</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1706444290851</updated>
+    </task>
+    <task id="LOCAL-00006" summary="new version">
+      <option name="closed" value="true" />
+      <created>1706798005930</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1706798005930</updated>
+    </task>
+    <task id="LOCAL-00007" summary="bug fix">
+      <option name="closed" value="true" />
+      <created>1706817978841</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1706817978841</updated>
+    </task>
+    <task id="LOCAL-00008" summary="new files that I've not added">
+      <option name="closed" value="true" />
+      <created>1706877829686</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1706877829686</updated>
+    </task>
+    <task id="LOCAL-00009" summary="add new level">
+      <option name="closed" value="true" />
+      <created>1706878498867</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1706878498867</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="enemies in map editor" />
+    <MESSAGE value="minor fixes" />
+    <MESSAGE value="new version" />
+    <MESSAGE value="bug fix" />
+    <MESSAGE value="new files that I've not added" />
+    <MESSAGE value="add new level" />
+    <option name="LAST_COMMIT_MESSAGE" value="add new level" />
+  </component>
+</project>
